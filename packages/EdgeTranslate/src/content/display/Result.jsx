@@ -104,6 +104,8 @@ export default function Result(props) {
    */
   const [textDirection, setTextDirection] = useState("ltr");
 
+  const [isDark, setIsDark] = useState(false);
+
   /**
    * Whether to fold too long translation content.
    */
@@ -552,7 +554,12 @@ export default function Result(props) {
      * Update displaying contents based on user's setting.
      */
     getOrSetDefaultSettings(
-      ["LayoutSettings", "TranslateResultFilter", "ContentDisplayOrder"],
+      [
+        "LayoutSettings",
+        "TranslateResultFilter",
+        "ContentDisplayOrder",
+        "Appearance",
+      ],
       DEFAULT_SETTINGS,
     ).then((result) => {
       setContentDisplayOrder(result.ContentDisplayOrder);
@@ -567,6 +574,7 @@ export default function Result(props) {
       setContentFilter(result.TranslateResultFilter);
       setTextDirection(result.LayoutSettings.RTL ? "rtl" : "ltr");
       setFoldLongContent(result.LayoutSettings.FoldLongContent);
+      setIsDark(!!result.Appearance?.DarkMode);
     });
     chrome.storage.onChanged.addListener((changes, area) => {
       if (area !== "sync") return;
@@ -595,6 +603,10 @@ export default function Result(props) {
         setTextDirection(changes.LayoutSettings.newValue.RTL ? "rtl" : "ltr");
         setFoldLongContent(changes.LayoutSettings.newValue.FoldLongContent);
       }
+
+      if (changes.Appearance) {
+        setIsDark(!!changes.Appearance.newValue?.DarkMode);
+      }
     });
 
     return () => {
@@ -605,7 +617,7 @@ export default function Result(props) {
 
   return (
     <Fragment>
-      <ThemeProvider theme={(props) => ({ ...props, textDirection })}>
+      <ThemeProvider theme={(props) => ({ ...props, textDirection, isDark })}>
         {contentDisplayOrder
           .filter((content) => contentFilter[content])
           .map((content) => CONTENTS[content])}
@@ -622,6 +634,9 @@ const BlockPadding = "10px";
 const BlockMargin = "8px";
 const LightPrimary = "rgba(74, 140, 247, 0.7)";
 const Gray = "#919191";
+const BgDark = "#292a2d";
+const TextDark = "#e8eaed";
+const GrayDark = "#9aa0a6";
 const BlockContentDrawerHeight = 150; // drawer height for blocks
 const TextContentDrawerHeight = 50; // drawer height for texts
 
@@ -638,7 +653,9 @@ export const Block = styled.div`
   padding: ${BlockPadding};
   margin: ${BlockMargin};
   margin-top: 0;
-  background-color: rgb(250, 250, 250);
+  background-color: ${(props) =>
+    props.theme.isDark ? BgDark : "rgb(250, 250, 250)"};
+  color: ${(props) => (props.theme.isDark ? TextDark : "inherit")};
   border-radius: 10px;
   /* box-shadow: 0px 3px 6px rgba(127, 127, 127, 0.25); */
   line-height: 120%;
@@ -672,7 +689,7 @@ const TextLine = styled.div`
 const StyledEditIcon = styled(EditIcon)`
   width: 18px;
   height: 18px;
-  fill: ${Gray};
+  fill: ${(props) => (props.theme.isDark ? GrayDark : Gray)};
   flex-shrink: 0;
   margin-left: 2px;
   transition: fill 0.2s linear;
@@ -684,7 +701,7 @@ const StyledEditIcon = styled(EditIcon)`
 const StyledEditDoneIcon = styled(EditDoneIcon)`
   width: 18px;
   height: 18px;
-  fill: ${Gray};
+  fill: ${(props) => (props.theme.isDark ? GrayDark : Gray)};
   flex-shrink: 0;
   margin-left: 2px;
   transition: fill 0.2s linear;
@@ -704,13 +721,13 @@ const PronounceLine = styled.div`
 `;
 
 const PronounceText = styled(DrawerBlock)`
-  color: ${Gray};
+  color: ${(props) => (props.theme.isDark ? GrayDark : Gray)};
 `;
 
 const StyledCopyIcon = styled(CopyIcon)`
   width: 20px;
   height: 20px;
-  fill: ${Gray};
+  fill: ${(props) => (props.theme.isDark ? GrayDark : Gray)};
   flex-shrink: 0;
   margin-left: 2px;
   transition: fill 0.2s linear;
@@ -826,7 +843,8 @@ const BlockSplitLine = styled.div`
   margin: 5px 0;
   flex-shrink: 0;
   border: none;
-  background: rgba(0, 0, 0, 0.25);
+  background: ${(props) =>
+    props.theme.isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.25)"};
 `;
 
 const BlockContent = styled(DrawerBlock)`
@@ -844,7 +862,7 @@ const DetailHeadSpot = styled(BlockHeadSpot)`
 `;
 
 const Position = styled.div`
-  color: ${Gray};
+  color: ${(props) => (props.theme.isDark ? GrayDark : Gray)};
   font-size: smaller;
 `;
 
@@ -855,7 +873,7 @@ const DetailMeaning = styled.div`
 `;
 
 const SynonymTitle = styled.div`
-  color: ${Gray};
+  color: ${(props) => (props.theme.isDark ? GrayDark : Gray)};
   font-size: small;
   ${(props) =>
     props.theme.textDirection === "ltr" ? "margin-left" : "margin-right"}: 10px;
@@ -880,7 +898,9 @@ const SynonymLine = styled.div`
 const SynonymWord = styled.span`
   padding: 2px 10px;
   margin: 0 2px 3px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  border: 1px solid
+    ${(props) =>
+      props.theme.isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.12)"};
   border-radius: 32px;
   cursor: pointer;
   font-size: small;
@@ -893,7 +913,7 @@ const DefinitionHeadSpot = styled(BlockHeadSpot)`
 `;
 
 const DefinitionExample = styled(DetailMeaning)`
-  color: #5f6368;
+  color: ${(props) => (props.theme.isDark ? GrayDark : "#5f6368")};
 `;
 
 const Example = styled(Block)``;

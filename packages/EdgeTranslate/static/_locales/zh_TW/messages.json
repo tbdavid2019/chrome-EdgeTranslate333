@@ -272,6 +272,14 @@
     "message": "設置",
     "description": "設置"
   },
+  "Appearance": {
+    "message": "外觀",
+    "description": "外觀"
+  },
+  "DarkMode": {
+    "message": "暗黑模式",
+    "description": "暗黑模式"
+  },
   "SelectTranslatePosition": {
     "message": "翻譯按鈕位置",
     "description": "翻譯按鈕位置"
