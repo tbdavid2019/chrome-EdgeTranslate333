@@ -19,7 +19,7 @@ const DEFAULT_SETTINGS = {
     SelectTranslatePosition: "TopRight",
   },
   Appearance: {
-    DarkMode: false,
+    DarkMode: true,
   },
   // Default settings of source language and target language
   languageSetting: {

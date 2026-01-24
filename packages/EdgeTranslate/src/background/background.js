@@ -212,21 +212,6 @@ channel.provide("open_google_pronounce", (params) => {
   const query = `how to pronounce ${text}`;
   const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
 
-  if (chrome.windows?.create) {
-    return new Promise((resolve) => {
-      chrome.windows.create({ url }, () => {
-        if (chrome.runtime.lastError) {
-          promiseTabs
-            .create({ url })
-            .then(() => resolve(true))
-            .catch(() => resolve(false));
-          return;
-        }
-        resolve(true);
-      });
-    });
-  }
-
   return promiseTabs
     .create({ url })
     .then(() => true)
