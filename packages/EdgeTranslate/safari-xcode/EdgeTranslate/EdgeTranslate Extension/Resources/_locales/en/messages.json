@@ -103,6 +103,10 @@
         "message": "Read translated text",
         "description": "Read translated text."
     },
+    "OpenGooglePronounce": {
+        "message": "Open Google pronunciation",
+        "description": "Open Google pronunciation page."
+    },
     "ClickToExpand": {
         "message": "Click to expand",
         "description": "Click to expand."
@@ -263,7 +267,7 @@
         "message": "Translate this page with Google",
         "description": "Translate current page with Google translate api."
     },
-    
+
     "Settings": {
         "message": "Settings",
         "description": "Settings"

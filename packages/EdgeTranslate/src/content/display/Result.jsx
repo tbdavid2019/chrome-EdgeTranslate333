@@ -3,7 +3,10 @@ import { h, Fragment } from "preact";
 import { useEffect, useRef, useReducer, useState } from "preact/hooks";
 import styled, { ThemeProvider } from "styled-components";
 import Channel from "common/scripts/channel.js";
-import { DEFAULT_SETTINGS, getOrSetDefaultSettings } from "common/scripts/settings.js";
+import {
+  DEFAULT_SETTINGS,
+  getOrSetDefaultSettings,
+} from "common/scripts/settings.js";
 import { checkTimestamp } from "./utils.js";
 import Notifier from "./library/notifier/notifier.js";
 import DOMPurify from "dompurify";
@@ -16,7 +19,7 @@ import CopyIcon from "./icons/copy.svg";
 
 // TTS speeds and consecutive click tracking
 let sourceTTSSpeed = "fast",
-    targetTTSSpeed = "fast";
+  targetTTSSpeed = "fast";
 let lastClickedButton = null; // "source" or "target"
 let lastClickTime = 0;
 // Communication channel.
@@ -24,15 +27,34 @@ const channel = new Channel();
 const notifier = new Notifier("center");
 
 const openGooglePronounce = (text) => {
-    const queryText = typeof text === "string" ? text.trim() : "";
-    if (!queryText) return;
+  const queryText = typeof text === "string" ? text.trim() : "";
+  if (!queryText) return;
 
-    const requestPromise = channel.request("open_google_pronounce", { text: queryText });
-    if (requestPromise && typeof requestPromise.catch === "function") {
-        requestPromise.catch(() => {
-            // 실패 시 조용히 처리
-        });
-    }
+  const requestPromise = channel.request("open_google_pronounce", {
+    text: queryText,
+  });
+  if (requestPromise && typeof requestPromise.catch === "function") {
+    requestPromise.catch(() => {
+      // 실패 시 조용히 처리
+    });
+  }
+};
+
+const isChineseLanguage = (language) =>
+  typeof language === "string" && language.toLowerCase().startsWith("zh");
+
+const hasCjkCharacters = (text) =>
+  /[\u3040-\u30ff\u3400-\u9fff\uf900-\ufaff]/.test(text);
+
+const shouldShowGooglePronounce = (text, language) => {
+  const value = typeof text === "string" ? text.trim() : "";
+  if (!value) return false;
+  if (isChineseLanguage(language)) return false;
+  if (hasCjkCharacters(value)) return false;
+  if (/\s/.test(value)) return false;
+  if (value.length > 40) return false;
+
+  return true;
 };
 
 /**
@@ -61,499 +83,535 @@ const openGooglePronounce = (text) => {
  * @returns {h.JSX.Element} element
  */
 export default function Result(props) {
-    /**
-     * The order state of displaying contents.
-     */
-    const [contentDisplayOrder, setContentDisplayOrder] = useState([]);
+  /**
+   * The order state of displaying contents.
+   */
+  const [contentDisplayOrder, setContentDisplayOrder] = useState([]);
 
-    /**
-     * The visible state of contents.
-     */
-    const [displayTPronunciation, setDisplayTPronunciation] = useState(false);
-    const [displaySPronunciation, setDisplaySPronunciation] = useState(false);
-    const [displayTPronunciationIcon, setDisplayTPronunciationIcon] = useState(false);
-    const [displaySPronunciationIcon, setDisplaySPronunciationIcon] = useState(false);
-    const [contentFilter, setContentFilter] = useState({});
+  /**
+   * The visible state of contents.
+   */
+  const [displayTPronunciation, setDisplayTPronunciation] = useState(false);
+  const [displaySPronunciation, setDisplaySPronunciation] = useState(false);
+  const [displayTPronunciationIcon, setDisplayTPronunciationIcon] =
+    useState(false);
+  const [displaySPronunciationIcon, setDisplaySPronunciationIcon] =
+    useState(false);
+  const [contentFilter, setContentFilter] = useState({});
 
-    /**
-     * Text direction state.
-     */
-    const [textDirection, setTextDirection] = useState("ltr");
+  /**
+   * Text direction state.
+   */
+  const [textDirection, setTextDirection] = useState("ltr");
 
-    /**
-     * Whether to fold too long translation content.
-     */
-    const [foldLongContent, setFoldLongContent] = useState(true);
+  /**
+   * Whether to fold too long translation content.
+   */
+  const [foldLongContent, setFoldLongContent] = useState(true);
 
-    /**
-     * The pronounce status
-     */
-    const [sourcePronouncing, setSourcePronounce] = useReducer(sourcePronounce, false),
-        [targetPronouncing, setTargetPronounce] = useReducer(targetPronounce, false);
+  /**
+   * The pronounce status
+   */
+  const [sourcePronouncing, setSourcePronounce] = useReducer(
+      sourcePronounce,
+      false,
+    ),
+    [targetPronouncing, setTargetPronounce] = useReducer(
+      targetPronounce,
+      false,
+    );
 
-    /**
-     * TTS stopping state to prevent multiple stop requests
-     */
-    const [stopping, setStopping] = useState(false);
+  /**
+   * TTS stopping state to prevent multiple stop requests
+   */
+  const [stopping, setStopping] = useState(false);
 
-    // Indicate whether user can edit and copy the translation result
-    const [copyResult, setCopyResult] = useReducer(copyContent, false);
-    const translateResultElRef = useRef();
+  // Indicate whether user can edit and copy the translation result
+  const [copyResult, setCopyResult] = useReducer(copyContent, false);
+  const translateResultElRef = useRef();
 
-    // Indicate whether user is editing the original text
-    const [editing, setEditing] = useReducer(_setEditing, false);
-    const originalTextElRef = useRef();
+  // Indicate whether user is editing the original text
+  const [editing, setEditing] = useReducer(_setEditing, false);
+  const originalTextElRef = useRef();
 
-    const TargetContent = (
-        <Fragment key={"mainMeaning"}>
-            {props.mainMeaning?.length > 0 && (
-                <Target>
-                    <TextLine>
-                        <div
-                            dir={textDirection}
-                            contenteditable={copyResult}
-                            onBlur={() => setCopyResult({ copy: false })}
-                            ref={translateResultElRef}
-                            style={{ paddingLeft: 3 }}
+  const TargetContent = (
+    <Fragment key={"mainMeaning"}>
+      {props.mainMeaning?.length > 0 && (
+        <Target>
+          <TextLine>
+            <div
+              dir={textDirection}
+              contenteditable={copyResult}
+              onBlur={() => setCopyResult({ copy: false })}
+              ref={translateResultElRef}
+              style={{ paddingLeft: 3 }}
+            >
+              {props.mainMeaning}
+            </div>
+            <StyledCopyIcon
+              role="button"
+              onClick={() =>
+                setCopyResult({
+                  copy: true,
+                  element: translateResultElRef.current,
+                })
+              }
+              title={chrome.i18n.getMessage("CopyResult")}
+            />
+          </TextLine>
+          {(displayTPronunciationIcon || displayTPronunciation) && (
+            <PronounceLine>
+              {displayTPronunciationIcon &&
+                (targetPronouncing ? (
+                  <StyledPronounceLoadingIcon
+                    role="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (stopping) return;
+
+                      console.log("Target TTS stop clicked");
+                      setStopping(true);
+                      // frame_closed 이벤트 직접 발송 (번역창 닫을 때와 동일한 방식)
+                      const emitPromise = channel.emit("frame_closed");
+                      if (
+                        emitPromise &&
+                        typeof emitPromise.catch === "function"
+                      ) {
+                        emitPromise
+                          .catch(() => {
+                            // 실패 시 조용히 처리
+                          })
+                          .finally(() => {
+                            setStopping(false);
+                          });
+                      } else {
+                        // If emit doesn't return a promise, just call finally callback
+                        setStopping(false);
+                      }
+                    }}
+                    title={chrome.i18n.getMessage("StopPronounce")}
+                  />
+                ) : (
+                  <StyledPronounceIcon
+                    role="button"
+                    onClick={() => setTargetPronounce(true)}
+                  />
+                ))}
+              {displayTPronunciationIcon &&
+                shouldShowGooglePronounce(
+                  props.mainMeaning,
+                  window.translateResult?.targetLanguage,
+                ) && (
+                  <StyledGooglePronounceIcon
+                    role="button"
+                    onClick={() => openGooglePronounce(props.mainMeaning)}
+                    title={chrome.i18n.getMessage("OpenGooglePronounce")}
+                  />
+                )}
+              {displayTPronunciation && (
+                <PronounceText
+                  dir={textDirection}
+                  DrawerHeight={TextContentDrawerHeight}
+                  DisableDrawer={!foldLongContent}
+                >
+                  {props.tPronunciation}
+                </PronounceText>
+              )}
+            </PronounceLine>
+          )}
+        </Target>
+      )}
+    </Fragment>
+  );
+
+  const SourceContent = (
+    <Fragment key={"originalText"}>
+      {props.originalText?.length > 0 && (
+        <Source>
+          <TextLine>
+            <div
+              dir={textDirection}
+              contenteditable={editing}
+              ref={originalTextElRef}
+              style={{ paddingLeft: 3 }}
+            >
+              {props.originalText}
+            </div>
+            {editing ? (
+              <StyledEditDoneIcon
+                role="button"
+                title={chrome.i18n.getMessage("Retranslate")}
+                onClick={() =>
+                  setEditing({
+                    edit: false,
+                    element: originalTextElRef.current,
+                  })
+                }
+              />
+            ) : (
+              <StyledEditIcon
+                role="button"
+                title={chrome.i18n.getMessage("EditText")}
+                onClick={() =>
+                  setEditing({
+                    edit: true,
+                    element: originalTextElRef.current,
+                  })
+                }
+              />
+            )}
+          </TextLine>
+          {(displaySPronunciationIcon || displaySPronunciation) && (
+            <PronounceLine>
+              {displaySPronunciationIcon &&
+                (sourcePronouncing ? (
+                  <StyledPronounceLoadingIcon
+                    role="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (stopping) return;
+
+                      console.log("Source TTS stop clicked");
+                      setStopping(true);
+                      // frame_closed 이벤트 직접 발송 (번역창 닫을 때와 동일한 방식)
+                      const emitPromise = channel.emit("frame_closed");
+                      if (
+                        emitPromise &&
+                        typeof emitPromise.catch === "function"
+                      ) {
+                        emitPromise
+                          .catch(() => {
+                            // 실패 시 조용히 처리
+                          })
+                          .finally(() => {
+                            setStopping(false);
+                          });
+                      } else {
+                        // If emit doesn't return a promise, just call finally callback
+                        setStopping(false);
+                      }
+                    }}
+                    title={chrome.i18n.getMessage("StopPronounce")}
+                  />
+                ) : (
+                  <StyledPronounceIcon
+                    role="button"
+                    onClick={() => setSourcePronounce(true)}
+                  />
+                ))}
+              {displaySPronunciationIcon &&
+                shouldShowGooglePronounce(
+                  props.originalText,
+                  window.translateResult?.sourceLanguage,
+                ) && (
+                  <StyledGooglePronounceIcon
+                    role="button"
+                    onClick={() => openGooglePronounce(props.originalText)}
+                    title={chrome.i18n.getMessage("OpenGooglePronounce")}
+                  />
+                )}
+              {displaySPronunciation && (
+                <PronounceText
+                  dir={textDirection}
+                  DrawerHeight={TextContentDrawerHeight}
+                  DisableDrawer={!foldLongContent}
+                >
+                  {props.sPronunciation}
+                </PronounceText>
+              )}
+            </PronounceLine>
+          )}
+        </Source>
+      )}
+    </Fragment>
+  );
+
+  const DetailContent = (
+    <Fragment key={"detailedMeanings"}>
+      {props.detailedMeanings?.length > 0 && (
+        <Detail>
+          <BlockHead>
+            <DetailHeadSpot />
+            <BlockHeadTitle>
+              {chrome.i18n.getMessage("DetailedMeanings")}
+            </BlockHeadTitle>
+            <BlockSplitLine />
+          </BlockHead>
+          <BlockContent
+            DrawerHeight={BlockContentDrawerHeight}
+            DisableDrawer={!foldLongContent}
+          >
+            {props.detailedMeanings.map((detail, detailIndex) => (
+              <Fragment key={`detail-${detailIndex}`}>
+                <Position dir={textDirection}>{detail.pos}</Position>
+                <DetailMeaning dir={textDirection}>
+                  {detail.meaning}
+                </DetailMeaning>
+                {detail.synonyms?.length > 0 && (
+                  <Fragment>
+                    <SynonymTitle dir={textDirection}>
+                      {chrome.i18n.getMessage("Synonyms")}
+                    </SynonymTitle>
+                    <SynonymLine>
+                      {detail.synonyms.map((word, synonymIndex) => (
+                        <SynonymWord
+                          key={`detail-synonym-${synonymIndex}`}
+                          dir={textDirection}
                         >
-                            {props.mainMeaning}
-                        </div>
-                        <StyledCopyIcon
-                            role="button"
-                            onClick={() =>
-                                setCopyResult({
-                                    copy: true,
-                                    element: translateResultElRef.current,
-                                })
-                            }
-                            title={chrome.i18n.getMessage("CopyResult")}
-                        />
-                    </TextLine>
-                    {(displayTPronunciationIcon || displayTPronunciation) && (
-                        <PronounceLine>
-                            {displayTPronunciationIcon &&
-                                (targetPronouncing ? (
-                                    <StyledPronounceLoadingIcon
-                                        role="button"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            if (stopping) return;
+                          {word}
+                        </SynonymWord>
+                      ))}
+                    </SynonymLine>
+                  </Fragment>
+                )}
+              </Fragment>
+            ))}
+          </BlockContent>
+        </Detail>
+      )}
+    </Fragment>
+  );
 
-                                            console.log("Target TTS stop clicked");
-                                            setStopping(true);
-                                            // frame_closed 이벤트 직접 발송 (번역창 닫을 때와 동일한 방식)
-                                            const emitPromise = channel.emit("frame_closed");
-                                            if (
-                                                emitPromise &&
-                                                typeof emitPromise.catch === "function"
-                                            ) {
-                                                emitPromise
-                                                    .catch(() => {
-                                                        // 실패 시 조용히 처리
-                                                    })
-                                                    .finally(() => {
-                                                        setStopping(false);
-                                                    });
-                                            } else {
-                                                // If emit doesn't return a promise, just call finally callback
-                                                setStopping(false);
-                                            }
-                                        }}
-                                        title={chrome.i18n.getMessage("StopPronounce")}
-                                    />
-                                ) : (
-                                    <StyledPronounceIcon
-                                        role="button"
-                                        onClick={() => setTargetPronounce(true)}
-                                    />
-                                ))}
-                            {displayTPronunciationIcon && (
-                                <StyledGooglePronounceIcon
-                                    role="button"
-                                    onClick={() => openGooglePronounce(props.mainMeaning)}
-                                    title={chrome.i18n.getMessage("OpenGooglePronounce")}
-                                />
-                            )}
-                            {displayTPronunciation && (
-                                <PronounceText
-                                    dir={textDirection}
-                                    DrawerHeight={TextContentDrawerHeight}
-                                    DisableDrawer={!foldLongContent}
-                                >
-                                    {props.tPronunciation}
-                                </PronounceText>
-                            )}
-                        </PronounceLine>
-                    )}
-                </Target>
-            )}
-        </Fragment>
-    );
-
-    const SourceContent = (
-        <Fragment key={"originalText"}>
-            {props.originalText?.length > 0 && (
-                <Source>
-                    <TextLine>
-                        <div
-                            dir={textDirection}
-                            contenteditable={editing}
-                            ref={originalTextElRef}
-                            style={{ paddingLeft: 3 }}
+  const DefinitionContent = (
+    <Fragment key={"definitions"}>
+      {props.definitions?.length > 0 && (
+        <Definition>
+          <BlockHead>
+            <DefinitionHeadSpot />
+            <BlockHeadTitle>
+              {chrome.i18n.getMessage("Definitions")}
+            </BlockHeadTitle>
+            <BlockSplitLine />
+          </BlockHead>
+          <BlockContent
+            DrawerHeight={BlockContentDrawerHeight}
+            DisableDrawer={!foldLongContent}
+          >
+            {props.definitions.map((definition, definitionIndex) => (
+              <Fragment key={`definition-${definitionIndex}`}>
+                <Position dir={textDirection}>{definition.pos}</Position>
+                <DetailMeaning dir={textDirection}>
+                  {definition.meaning}
+                </DetailMeaning>
+                {definition.example && (
+                  <DefinitionExample
+                    dir={textDirection}
+                  >{`"${definition.example}"`}</DefinitionExample>
+                )}
+                {definition.synonyms?.length > 0 && (
+                  <Fragment>
+                    <SynonymTitle dir={textDirection}>
+                      {chrome.i18n.getMessage("Synonyms")}
+                    </SynonymTitle>
+                    <SynonymLine>
+                      {definition.synonyms.map((word, synonymIndex) => (
+                        <SynonymWord
+                          key={`definition-synonym-${synonymIndex}`}
+                          dir={textDirection}
                         >
-                            {props.originalText}
-                        </div>
-                        {editing ? (
-                            <StyledEditDoneIcon
-                                role="button"
-                                title={chrome.i18n.getMessage("Retranslate")}
-                                onClick={() =>
-                                    setEditing({
-                                        edit: false,
-                                        element: originalTextElRef.current,
-                                    })
-                                }
-                            />
-                        ) : (
-                            <StyledEditIcon
-                                role="button"
-                                title={chrome.i18n.getMessage("EditText")}
-                                onClick={() =>
-                                    setEditing({
-                                        edit: true,
-                                        element: originalTextElRef.current,
-                                    })
-                                }
-                            />
-                        )}
-                    </TextLine>
-                    {(displaySPronunciationIcon || displaySPronunciation) && (
-                        <PronounceLine>
-                            {displaySPronunciationIcon &&
-                                (sourcePronouncing ? (
-                                    <StyledPronounceLoadingIcon
-                                        role="button"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            if (stopping) return;
+                          {word}
+                        </SynonymWord>
+                      ))}
+                    </SynonymLine>
+                  </Fragment>
+                )}
+              </Fragment>
+            ))}
+          </BlockContent>
+        </Definition>
+      )}
+    </Fragment>
+  );
 
-                                            console.log("Source TTS stop clicked");
-                                            setStopping(true);
-                                            // frame_closed 이벤트 직접 발송 (번역창 닫을 때와 동일한 방식)
-                                            const emitPromise = channel.emit("frame_closed");
-                                            if (
-                                                emitPromise &&
-                                                typeof emitPromise.catch === "function"
-                                            ) {
-                                                emitPromise
-                                                    .catch(() => {
-                                                        // 실패 시 조용히 처리
-                                                    })
-                                                    .finally(() => {
-                                                        setStopping(false);
-                                                    });
-                                            } else {
-                                                // If emit doesn't return a promise, just call finally callback
-                                                setStopping(false);
-                                            }
-                                        }}
-                                        title={chrome.i18n.getMessage("StopPronounce")}
-                                    />
-                                ) : (
-                                    <StyledPronounceIcon
-                                        role="button"
-                                        onClick={() => setSourcePronounce(true)}
-                                    />
-                                ))}
-                            {displaySPronunciationIcon && (
-                                <StyledGooglePronounceIcon
-                                    role="button"
-                                    onClick={() => openGooglePronounce(props.originalText)}
-                                    title={chrome.i18n.getMessage("OpenGooglePronounce")}
-                                />
-                            )}
-                            {displaySPronunciation && (
-                                <PronounceText
-                                    dir={textDirection}
-                                    DrawerHeight={TextContentDrawerHeight}
-                                    DisableDrawer={!foldLongContent}
-                                >
-                                    {props.sPronunciation}
-                                </PronounceText>
-                            )}
-                        </PronounceLine>
-                    )}
-                </Source>
-            )}
-        </Fragment>
+  const ExampleContent = (
+    <Fragment key={"examples"}>
+      {props.examples?.length > 0 && (
+        <Example>
+          <BlockHead>
+            <ExampleHeadSpot />
+            <BlockHeadTitle>
+              {chrome.i18n.getMessage("Examples")}
+            </BlockHeadTitle>
+            <BlockSplitLine />
+          </BlockHead>
+          <BlockContent
+            DrawerHeight={BlockContentDrawerHeight}
+            DisableDrawer={!foldLongContent}
+          >
+            <ExampleList dir={textDirection}>
+              {props.examples.map((example, index) => (
+                <ExampleItem key={`example-${index}`}>
+                  {example.source && (
+                    <ExampleSource
+                      dangerouslySetInnerHTML={{
+                        __html: DOMPurify.sanitize(example.source, {
+                          ALLOWED_TAGS: ["b"],
+                        }),
+                      }}
+                    />
+                  )}
+                  {example.target && (
+                    <ExampleTarget
+                      // eslint-disable-next-line react/no-danger
+                      dangerouslySetInnerHTML={{
+                        __html: DOMPurify.sanitize(example.target, {
+                          ALLOWED_TAGS: ["b"],
+                        }),
+                      }}
+                    />
+                  )}
+                </ExampleItem>
+              ))}
+            </ExampleList>
+          </BlockContent>
+        </Example>
+      )}
+    </Fragment>
+  );
+
+  /**
+   * Content maps.
+   */
+  const CONTENTS = {
+    mainMeaning: TargetContent,
+    originalText: SourceContent,
+    detailedMeanings: DetailContent,
+    definitions: DefinitionContent,
+    examples: ExampleContent,
+  };
+
+  useEffect(() => {
+    sourceTTSSpeed = "fast";
+    targetTTSSpeed = "fast";
+    lastClickedButton = null;
+    lastClickTime = 0;
+
+    /*
+     * COMMUNICATE WITH BACKGROUND MODULE
+     */
+    const cancelers = [];
+    cancelers.push(
+      channel.on("pronouncing_finished", (detail) => {
+        if (checkTimestamp(detail.timestamp)) {
+          if (detail.pronouncing === "source") {
+            setSourcePronounce(false);
+          } else if (detail.pronouncing === "target") {
+            setTargetPronounce(false);
+          } else if (detail.pronouncing === "both") {
+            setSourcePronounce(false);
+            setTargetPronounce(false);
+          }
+          setStopping(false);
+        }
+      }),
     );
 
-    const DetailContent = (
-        <Fragment key={"detailedMeanings"}>
-            {props.detailedMeanings?.length > 0 && (
-                <Detail>
-                    <BlockHead>
-                        <DetailHeadSpot />
-                        <BlockHeadTitle>
-                            {chrome.i18n.getMessage("DetailedMeanings")}
-                        </BlockHeadTitle>
-                        <BlockSplitLine />
-                    </BlockHead>
-                    <BlockContent
-                        DrawerHeight={BlockContentDrawerHeight}
-                        DisableDrawer={!foldLongContent}
-                    >
-                        {props.detailedMeanings.map((detail, detailIndex) => (
-                            <Fragment key={`detail-${detailIndex}`}>
-                                <Position dir={textDirection}>{detail.pos}</Position>
-                                <DetailMeaning dir={textDirection}>{detail.meaning}</DetailMeaning>
-                                {detail.synonyms?.length > 0 && (
-                                    <Fragment>
-                                        <SynonymTitle dir={textDirection}>
-                                            {chrome.i18n.getMessage("Synonyms")}
-                                        </SynonymTitle>
-                                        <SynonymLine>
-                                            {detail.synonyms.map((word, synonymIndex) => (
-                                                <SynonymWord
-                                                    key={`detail-synonym-${synonymIndex}`}
-                                                    dir={textDirection}
-                                                >
-                                                    {word}
-                                                </SynonymWord>
-                                            ))}
-                                        </SynonymLine>
-                                    </Fragment>
-                                )}
-                            </Fragment>
-                        ))}
-                    </BlockContent>
-                </Detail>
-            )}
-        </Fragment>
+    cancelers.push(
+      channel.on("pronouncing_error", (detail) => {
+        if (checkTimestamp(detail.timestamp)) {
+          if (detail.pronouncing === "source") setSourcePronounce(false);
+          else if (detail.pronouncing === "target") setTargetPronounce(false);
+          notifier.notify({
+            type: "error",
+            title: chrome.i18n.getMessage("AppName"),
+            detail: chrome.i18n.getMessage("PRONOUN_ERR"),
+          });
+        }
+      }),
     );
 
-    const DefinitionContent = (
-        <Fragment key={"definitions"}>
-            {props.definitions?.length > 0 && (
-                <Definition>
-                    <BlockHead>
-                        <DefinitionHeadSpot />
-                        <BlockHeadTitle>{chrome.i18n.getMessage("Definitions")}</BlockHeadTitle>
-                        <BlockSplitLine />
-                    </BlockHead>
-                    <BlockContent
-                        DrawerHeight={BlockContentDrawerHeight}
-                        DisableDrawer={!foldLongContent}
-                    >
-                        {props.definitions.map((definition, definitionIndex) => (
-                            <Fragment key={`definition-${definitionIndex}`}>
-                                <Position dir={textDirection}>{definition.pos}</Position>
-                                <DetailMeaning dir={textDirection}>
-                                    {definition.meaning}
-                                </DetailMeaning>
-                                {definition.example && (
-                                    <DefinitionExample
-                                        dir={textDirection}
-                                    >{`"${definition.example}"`}</DefinitionExample>
-                                )}
-                                {definition.synonyms?.length > 0 && (
-                                    <Fragment>
-                                        <SynonymTitle dir={textDirection}>
-                                            {chrome.i18n.getMessage("Synonyms")}
-                                        </SynonymTitle>
-                                        <SynonymLine>
-                                            {definition.synonyms.map((word, synonymIndex) => (
-                                                <SynonymWord
-                                                    key={`definition-synonym-${synonymIndex}`}
-                                                    dir={textDirection}
-                                                >
-                                                    {word}
-                                                </SynonymWord>
-                                            ))}
-                                        </SynonymLine>
-                                    </Fragment>
-                                )}
-                            </Fragment>
-                        ))}
-                    </BlockContent>
-                </Definition>
-            )}
-        </Fragment>
-    );
-
-    const ExampleContent = (
-        <Fragment key={"examples"}>
-            {props.examples?.length > 0 && (
-                <Example>
-                    <BlockHead>
-                        <ExampleHeadSpot />
-                        <BlockHeadTitle>{chrome.i18n.getMessage("Examples")}</BlockHeadTitle>
-                        <BlockSplitLine />
-                    </BlockHead>
-                    <BlockContent
-                        DrawerHeight={BlockContentDrawerHeight}
-                        DisableDrawer={!foldLongContent}
-                    >
-                        <ExampleList dir={textDirection}>
-                            {props.examples.map((example, index) => (
-                                <ExampleItem key={`example-${index}`}>
-                                    {example.source && (
-                                        <ExampleSource
-                                            dangerouslySetInnerHTML={{
-                                                __html: DOMPurify.sanitize(example.source, {
-                                                    ALLOWED_TAGS: ["b"],
-                                                }),
-                                            }}
-                                        />
-                                    )}
-                                    {example.target && (
-                                        <ExampleTarget
-                                            // eslint-disable-next-line react/no-danger
-                                            dangerouslySetInnerHTML={{
-                                                __html: DOMPurify.sanitize(example.target, {
-                                                    ALLOWED_TAGS: ["b"],
-                                                }),
-                                            }}
-                                        />
-                                    )}
-                                </ExampleItem>
-                            ))}
-                        </ExampleList>
-                    </BlockContent>
-                </Example>
-            )}
-        </Fragment>
+    cancelers.push(
+      channel.on("command", (detail) => {
+        switch (detail.command) {
+          case "pronounce_original":
+            setSourcePronounce(true);
+            break;
+          case "pronounce_translated":
+            setTargetPronounce(true);
+            break;
+          case "copy_result":
+            if (
+              window.translateResult.mainMeaning &&
+              translateResultElRef.current
+            ) {
+              setCopyResult({
+                copy: true,
+                element: translateResultElRef.current,
+              });
+            }
+            break;
+          default:
+            break;
+        }
+      }),
     );
 
     /**
-     * Content maps.
+     * Update displaying contents based on user's setting.
      */
-    const CONTENTS = {
-        mainMeaning: TargetContent,
-        originalText: SourceContent,
-        detailedMeanings: DetailContent,
-        definitions: DefinitionContent,
-        examples: ExampleContent,
+    getOrSetDefaultSettings(
+      ["LayoutSettings", "TranslateResultFilter", "ContentDisplayOrder"],
+      DEFAULT_SETTINGS,
+    ).then((result) => {
+      setContentDisplayOrder(result.ContentDisplayOrder);
+      setDisplaySPronunciation(result.TranslateResultFilter["sPronunciation"]);
+      setDisplayTPronunciation(result.TranslateResultFilter["tPronunciation"]);
+      setDisplaySPronunciationIcon(
+        result.TranslateResultFilter["sPronunciationIcon"],
+      );
+      setDisplayTPronunciationIcon(
+        result.TranslateResultFilter["tPronunciationIcon"],
+      );
+      setContentFilter(result.TranslateResultFilter);
+      setTextDirection(result.LayoutSettings.RTL ? "rtl" : "ltr");
+      setFoldLongContent(result.LayoutSettings.FoldLongContent);
+    });
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area !== "sync") return;
+
+      if (changes.ContentDisplayOrder) {
+        setContentDisplayOrder(changes.ContentDisplayOrder.newValue);
+      }
+
+      if (changes.TranslateResultFilter) {
+        setDisplaySPronunciation(
+          changes.TranslateResultFilter.newValue["sPronunciation"],
+        );
+        setDisplayTPronunciation(
+          changes.TranslateResultFilter.newValue["tPronunciation"],
+        );
+        setDisplaySPronunciationIcon(
+          changes.TranslateResultFilter.newValue["sPronunciationIcon"],
+        );
+        setDisplayTPronunciationIcon(
+          changes.TranslateResultFilter.newValue["tPronunciationIcon"],
+        );
+        setContentFilter(changes.TranslateResultFilter.newValue);
+      }
+
+      if (changes.LayoutSettings) {
+        setTextDirection(changes.LayoutSettings.newValue.RTL ? "rtl" : "ltr");
+        setFoldLongContent(changes.LayoutSettings.newValue.FoldLongContent);
+      }
+    });
+
+    return () => {
+      // remove all of event listeners before destroying the component
+      cancelers.forEach((canceler) => canceler());
     };
+  }, []);
 
-    useEffect(() => {
-        sourceTTSSpeed = "fast";
-        targetTTSSpeed = "fast";
-        lastClickedButton = null;
-        lastClickTime = 0;
-
-        /*
-         * COMMUNICATE WITH BACKGROUND MODULE
-         */
-        const cancelers = [];
-        cancelers.push(
-            channel.on("pronouncing_finished", (detail) => {
-                if (checkTimestamp(detail.timestamp)) {
-                    if (detail.pronouncing === "source") {
-                        setSourcePronounce(false);
-                    } else if (detail.pronouncing === "target") {
-                        setTargetPronounce(false);
-                    } else if (detail.pronouncing === "both") {
-                        setSourcePronounce(false);
-                        setTargetPronounce(false);
-                    }
-                    setStopping(false);
-                }
-            }),
-        );
-
-        cancelers.push(
-            channel.on("pronouncing_error", (detail) => {
-                if (checkTimestamp(detail.timestamp)) {
-                    if (detail.pronouncing === "source") setSourcePronounce(false);
-                    else if (detail.pronouncing === "target") setTargetPronounce(false);
-                    notifier.notify({
-                        type: "error",
-                        title: chrome.i18n.getMessage("AppName"),
-                        detail: chrome.i18n.getMessage("PRONOUN_ERR"),
-                    });
-                }
-            }),
-        );
-
-        cancelers.push(
-            channel.on("command", (detail) => {
-                switch (detail.command) {
-                    case "pronounce_original":
-                        setSourcePronounce(true);
-                        break;
-                    case "pronounce_translated":
-                        setTargetPronounce(true);
-                        break;
-                    case "copy_result":
-                        if (window.translateResult.mainMeaning && translateResultElRef.current) {
-                            setCopyResult({ copy: true, element: translateResultElRef.current });
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            }),
-        );
-
-        /**
-         * Update displaying contents based on user's setting.
-         */
-        getOrSetDefaultSettings(
-            ["LayoutSettings", "TranslateResultFilter", "ContentDisplayOrder"],
-            DEFAULT_SETTINGS,
-        ).then((result) => {
-            setContentDisplayOrder(result.ContentDisplayOrder);
-            setDisplaySPronunciation(result.TranslateResultFilter["sPronunciation"]);
-            setDisplayTPronunciation(result.TranslateResultFilter["tPronunciation"]);
-            setDisplaySPronunciationIcon(result.TranslateResultFilter["sPronunciationIcon"]);
-            setDisplayTPronunciationIcon(result.TranslateResultFilter["tPronunciationIcon"]);
-            setContentFilter(result.TranslateResultFilter);
-            setTextDirection(result.LayoutSettings.RTL ? "rtl" : "ltr");
-            setFoldLongContent(result.LayoutSettings.FoldLongContent);
-        });
-        chrome.storage.onChanged.addListener((changes, area) => {
-            if (area !== "sync") return;
-
-            if (changes.ContentDisplayOrder) {
-                setContentDisplayOrder(changes.ContentDisplayOrder.newValue);
-            }
-
-            if (changes.TranslateResultFilter) {
-                setDisplaySPronunciation(changes.TranslateResultFilter.newValue["sPronunciation"]);
-                setDisplayTPronunciation(changes.TranslateResultFilter.newValue["tPronunciation"]);
-                setDisplaySPronunciationIcon(
-                    changes.TranslateResultFilter.newValue["sPronunciationIcon"],
-                );
-                setDisplayTPronunciationIcon(
-                    changes.TranslateResultFilter.newValue["tPronunciationIcon"],
-                );
-                setContentFilter(changes.TranslateResultFilter.newValue);
-            }
-
-            if (changes.LayoutSettings) {
-                setTextDirection(changes.LayoutSettings.newValue.RTL ? "rtl" : "ltr");
-                setFoldLongContent(changes.LayoutSettings.newValue.FoldLongContent);
-            }
-        });
-
-        return () => {
-            // remove all of event listeners before destroying the component
-            cancelers.forEach((canceler) => canceler());
-        };
-    }, []);
-
-    return (
-        <Fragment>
-            <ThemeProvider theme={(props) => ({ ...props, textDirection })}>
-                {contentDisplayOrder
-                    .filter((content) => contentFilter[content])
-                    .map((content) => CONTENTS[content])}
-            </ThemeProvider>
-        </Fragment>
-    );
+  return (
+    <Fragment>
+      <ThemeProvider theme={(props) => ({ ...props, textDirection })}>
+        {contentDisplayOrder
+          .filter((content) => contentFilter[content])
+          .map((content) => CONTENTS[content])}
+      </ThemeProvider>
+    </Fragment>
+  );
 }
 
 /**
@@ -571,291 +629,300 @@ const TextContentDrawerHeight = 50; // drawer height for texts
  * basic style for a block used to display content
  */
 export const Block = styled.div`
-    width: calc(100% - 2 * ${BlockMargin});
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    padding: ${BlockPadding};
-    margin: ${BlockMargin};
-    margin-top: 0;
-    background-color: rgb(250, 250, 250);
-    border-radius: 10px;
-    /* box-shadow: 0px 3px 6px rgba(127, 127, 127, 0.25); */
-    line-height: 120%;
-    letter-spacing: 0.02em;
+  width: calc(100% - 2 * ${BlockMargin});
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: ${BlockPadding};
+  margin: ${BlockMargin};
+  margin-top: 0;
+  background-color: rgb(250, 250, 250);
+  border-radius: 10px;
+  /* box-shadow: 0px 3px 6px rgba(127, 127, 127, 0.25); */
+  line-height: 120%;
+  letter-spacing: 0.02em;
 `;
 
 const Source = styled(Block)`
-    font-weight: normal;
-    white-space: pre-wrap;
+  font-weight: normal;
+  white-space: pre-wrap;
 `;
 
 const Target = styled(Block)`
-    font-weight: normal;
-    white-space: pre-wrap;
+  font-weight: normal;
+  white-space: pre-wrap;
 `;
 
 const Detail = styled(Block)`
-    font-weight: normal;
+  font-weight: normal;
 `;
 
 const TextLine = styled.div`
-    width: 100%;
-    display: flex;
-    margin: 5px 0;
-    flex-direction: ${(props) => (props.theme.textDirection === "ltr" ? "row" : "row-reverse")};
-    justify-content: space-between;
-    align-items: center;
+  width: 100%;
+  display: flex;
+  margin: 5px 0;
+  flex-direction: ${(props) =>
+    props.theme.textDirection === "ltr" ? "row" : "row-reverse"};
+  justify-content: space-between;
+  align-items: center;
 `;
 
 const StyledEditIcon = styled(EditIcon)`
-    width: 18px;
-    height: 18px;
-    fill: ${Gray};
-    flex-shrink: 0;
-    margin-left: 2px;
-    transition: fill 0.2s linear;
-    &:hover {
-        fill: dimgray;
-    }
+  width: 18px;
+  height: 18px;
+  fill: ${Gray};
+  flex-shrink: 0;
+  margin-left: 2px;
+  transition: fill 0.2s linear;
+  &:hover {
+    fill: dimgray;
+  }
 `;
 
 const StyledEditDoneIcon = styled(EditDoneIcon)`
-    width: 18px;
-    height: 18px;
-    fill: ${Gray};
-    flex-shrink: 0;
-    margin-left: 2px;
-    transition: fill 0.2s linear;
-    &:hover {
-        fill: dimgray;
-    }
+  width: 18px;
+  height: 18px;
+  fill: ${Gray};
+  flex-shrink: 0;
+  margin-left: 2px;
+  transition: fill 0.2s linear;
+  &:hover {
+    fill: dimgray;
+  }
 `;
 
 const PronounceLine = styled.div`
-    width: 100%;
-    margin: 5px 0;
-    display: flex;
-    flex-direction: ${(props) => (props.theme.textDirection === "ltr" ? "row" : "row-reverse")};
-    justify-content: flex-start;
-    align-items: center;
+  width: 100%;
+  margin: 5px 0;
+  display: flex;
+  flex-direction: ${(props) =>
+    props.theme.textDirection === "ltr" ? "row" : "row-reverse"};
+  justify-content: flex-start;
+  align-items: center;
 `;
 
 const PronounceText = styled(DrawerBlock)`
-    color: ${Gray};
+  color: ${Gray};
 `;
 
 const StyledCopyIcon = styled(CopyIcon)`
-    width: 20px;
-    height: 20px;
-    fill: ${Gray};
-    flex-shrink: 0;
-    margin-left: 2px;
-    transition: fill 0.2s linear;
-    &:hover {
-        fill: dimgray;
-    }
+  width: 20px;
+  height: 20px;
+  fill: ${Gray};
+  flex-shrink: 0;
+  margin-left: 2px;
+  transition: fill 0.2s linear;
+  &:hover {
+    fill: dimgray;
+  }
 `;
 
 const StyledPronounceIcon = styled(PronounceIcon)`
-    width: 20px;
-    height: 20px;
-    padding: 2px;
-    margin-right: 10px;
-    fill: ${LightPrimary};
-    flex-shrink: 0;
-    transition: fill 0.2s linear;
-    ${(props) =>
-        props.theme.textDirection === "ltr"
-            ? `
+  width: 20px;
+  height: 20px;
+  padding: 2px;
+  margin-right: 10px;
+  fill: ${LightPrimary};
+  flex-shrink: 0;
+  transition: fill 0.2s linear;
+  ${(props) =>
+    props.theme.textDirection === "ltr"
+      ? `
                 margin-right: 10px;
             `
-            : `
+      : `
                 margin-left: 10px;
                 transform: rotate(180deg);
             `}
 
-    &:hover {
-        fill: orange !important;
-    }
+  &:hover {
+    fill: orange !important;
+  }
 `;
 
 const StyledPronounceLoadingIcon = styled(PronounceLoadingIcon)`
-    width: 24px;
-    height: 24px;
-    margin-right: 10px;
-    fill: ${LightPrimary};
-    padding: 0;
-    flex-shrink: 0;
-    cursor: pointer;
-    transition: fill 0.2s linear;
+  width: 24px;
+  height: 24px;
+  margin-right: 10px;
+  fill: ${LightPrimary};
+  padding: 0;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: fill 0.2s linear;
+
+  circle {
+    fill: none;
+    stroke: ${LightPrimary} !important;
+    transition: stroke 0.2s linear;
+  }
+
+  &:hover {
+    fill: orange !important;
 
     circle {
-        fill: none;
-        stroke: ${LightPrimary} !important;
-        transition: stroke 0.2s linear;
+      stroke: orange !important;
     }
-
-    &:hover {
-        fill: orange !important;
-
-        circle {
-            stroke: orange !important;
-        }
-    }
+  }
 `;
 
 const GooglePronounceIcon = (props) => (
-    <svg viewBox="0 0 24 24" {...props}>
-        <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .533 5.333.533 12S5.867 24 12.48 24c3.44 0 6.1-1.12 7.96-3.067 1.893-1.893 2.48-4.56 2.48-6.72 0-.667-.053-1.28-.16-1.88h-10.28z" />
-    </svg>
+  <svg viewBox="0 0 24 24" {...props}>
+    <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .533 5.333.533 12S5.867 24 12.48 24c3.44 0 6.1-1.12 7.96-3.067 1.893-1.893 2.48-4.56 2.48-6.72 0-.667-.053-1.28-.16-1.88h-10.28z" />
+  </svg>
 );
 
 const StyledGooglePronounceIcon = styled(GooglePronounceIcon)`
-    width: 20px;
-    height: 20px;
-    padding: 2px;
-    margin-right: 10px;
-    fill: ${LightPrimary};
-    flex-shrink: 0;
-    transition: fill 0.2s linear;
-    ${(props) =>
-        props.theme.textDirection === "ltr"
-            ? `
+  width: 20px;
+  height: 20px;
+  padding: 2px;
+  margin-right: 10px;
+  fill: ${LightPrimary};
+  flex-shrink: 0;
+  transition: fill 0.2s linear;
+  ${(props) =>
+    props.theme.textDirection === "ltr"
+      ? `
                 margin-right: 10px;
             `
-            : `
+      : `
                 margin-left: 10px;
             `}
 
-    &:hover {
-        fill: orange !important;
-    }
+  &:hover {
+    fill: orange !important;
+  }
 `;
 
 const BlockHead = styled.div`
-    width: 100%;
-    display: flex;
-    flex-direction: ${(props) => (props.theme.textDirection === "ltr" ? "row" : "row-reverse")};
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    align-items: center;
+  width: 100%;
+  display: flex;
+  flex-direction: ${(props) =>
+    props.theme.textDirection === "ltr" ? "row" : "row-reverse"};
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
 `;
 
 const BlockHeadTitle = styled.span`
-    font-size: small;
-    ${(props) =>
-        `${props.theme.textDirection === "ltr" ? "margin-left" : "margin-right"}:${BlockPadding}`}
+  font-size: small;
+  ${(props) =>
+    `${props.theme.textDirection === "ltr" ? "margin-left" : "margin-right"}:${BlockPadding}`}
 `;
 
 /**
  * common style for the spot of block head
  */
 const BlockHeadSpot = styled.span`
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
 `;
 
 const BlockSplitLine = styled.div`
-    width: 100%;
-    height: 1px;
-    margin: 5px 0;
-    flex-shrink: 0;
-    border: none;
-    background: rgba(0, 0, 0, 0.25);
+  width: 100%;
+  height: 1px;
+  margin: 5px 0;
+  flex-shrink: 0;
+  border: none;
+  background: rgba(0, 0, 0, 0.25);
 `;
 
 const BlockContent = styled(DrawerBlock)`
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: ${(props) => (props.theme.textDirection === "ltr" ? "flex-start" : "flex-end")};
-    flex-shrink: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: ${(props) =>
+    props.theme.textDirection === "ltr" ? "flex-start" : "flex-end"};
+  flex-shrink: 0;
 `;
 
 const DetailHeadSpot = styled(BlockHeadSpot)`
-    background-color: #00bfa5;
+  background-color: #00bfa5;
 `;
 
 const Position = styled.div`
-    color: ${Gray};
-    font-size: smaller;
+  color: ${Gray};
+  font-size: smaller;
 `;
 
 const DetailMeaning = styled.div`
-    padding: 5px 0;
-    ${(props) => (props.theme.textDirection === "ltr" ? "margin-left" : "margin-right")}: 10px;
+  padding: 5px 0;
+  ${(props) =>
+    props.theme.textDirection === "ltr" ? "margin-left" : "margin-right"}: 10px;
 `;
 
 const SynonymTitle = styled.div`
-    color: ${Gray};
-    font-size: small;
-    ${(props) => (props.theme.textDirection === "ltr" ? "margin-left" : "margin-right")}: 10px;
+  color: ${Gray};
+  font-size: small;
+  ${(props) =>
+    props.theme.textDirection === "ltr" ? "margin-left" : "margin-right"}: 10px;
 `;
 
 const SynonymLine = styled.div`
-    display: flex;
-    flex-wrap: wrap;
-    padding: 5px 0;
-    ${(props) =>
-        props.theme.textDirection === "ltr"
-            ? `
+  display: flex;
+  flex-wrap: wrap;
+  padding: 5px 0;
+  ${(props) =>
+    props.theme.textDirection === "ltr"
+      ? `
                 margin-left: 10px;
                 flex-direction: row;
             `
-            : `
+      : `
                 margin-right: 10px;       
                 flex-direction: row-reverse;
             `};
 `;
 
 const SynonymWord = styled.span`
-    padding: 2px 10px;
-    margin: 0 2px 3px;
-    border: 1px solid rgba(0, 0, 0, 0.12);
-    border-radius: 32px;
-    cursor: pointer;
-    font-size: small;
+  padding: 2px 10px;
+  margin: 0 2px 3px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 32px;
+  cursor: pointer;
+  font-size: small;
 `;
 
 const Definition = styled(Block)``;
 
 const DefinitionHeadSpot = styled(BlockHeadSpot)`
-    background-color: #ff4081;
+  background-color: #ff4081;
 `;
 
 const DefinitionExample = styled(DetailMeaning)`
-    color: #5f6368;
+  color: #5f6368;
 `;
 
 const Example = styled(Block)``;
 
 const ExampleHeadSpot = styled(BlockHeadSpot)`
-    background-color: #3d5afe;
+  background-color: #3d5afe;
 `;
 
 const ExampleList = styled.ol`
-    list-style-type: decimal;
-    ${(props) => (props.theme.textDirection === "ltr" ? "padding-left" : "padding-right")}: 1.5rem;
-    margin: 0;
+  list-style-type: decimal;
+  ${(props) =>
+    props.theme.textDirection === "ltr"
+      ? "padding-left"
+      : "padding-right"}: 1.5rem;
+  margin: 0;
 `;
 
 const ExampleItem = styled.li`
-    padding: 5px 0;
-    font-size: small;
+  padding: 5px 0;
+  font-size: small;
 `;
 
 const ExampleSource = styled.div`
-    font-size: medium;
+  font-size: medium;
 `;
 
 const ExampleTarget = styled.div`
-    padding-top: 5px;
-    font-size: medium;
+  padding-top: 5px;
+  font-size: medium;
 `;
 
 /**
@@ -867,68 +934,68 @@ const ExampleTarget = styled.div`
  * Send message to background to pronounce the translating text.
  */
 function sourcePronounce(_, startPronounce) {
-    if (startPronounce) {
-        const currentTime = Date.now();
-        const timeSinceLastClick = currentTime - lastClickTime;
+  if (startPronounce) {
+    const currentTime = Date.now();
+    const timeSinceLastClick = currentTime - lastClickTime;
 
-        // Only toggle speed if same button clicked consecutively within 3 seconds
-        if (lastClickedButton === "source" && timeSinceLastClick < 3000) {
-            sourceTTSSpeed = sourceTTSSpeed === "fast" ? "slow" : "fast";
-        } else {
-            // Reset to fast speed for first click or after switching buttons
-            sourceTTSSpeed = "fast";
-        }
-
-        lastClickedButton = "source";
-        lastClickTime = currentTime;
-
-        const requestPromise = channel.request("pronounce", {
-            pronouncing: "source",
-            text: window.translateResult.originalText,
-            language: window.translateResult.sourceLanguage,
-            speed: sourceTTSSpeed,
-        });
-        if (requestPromise && typeof requestPromise.catch === "function") {
-            requestPromise.catch(() => {
-                // TTS 실패 처리는 조용히
-            });
-        }
+    // Only toggle speed if same button clicked consecutively within 3 seconds
+    if (lastClickedButton === "source" && timeSinceLastClick < 3000) {
+      sourceTTSSpeed = sourceTTSSpeed === "fast" ? "slow" : "fast";
+    } else {
+      // Reset to fast speed for first click or after switching buttons
+      sourceTTSSpeed = "fast";
     }
-    return startPronounce;
+
+    lastClickedButton = "source";
+    lastClickTime = currentTime;
+
+    const requestPromise = channel.request("pronounce", {
+      pronouncing: "source",
+      text: window.translateResult.originalText,
+      language: window.translateResult.sourceLanguage,
+      speed: sourceTTSSpeed,
+    });
+    if (requestPromise && typeof requestPromise.catch === "function") {
+      requestPromise.catch(() => {
+        // TTS 실패 처리는 조용히
+      });
+    }
+  }
+  return startPronounce;
 }
 
 /**
  * A reducer for target pronouncing state
  */
 function targetPronounce(_, startPronounce) {
-    if (startPronounce) {
-        const currentTime = Date.now();
-        const timeSinceLastClick = currentTime - lastClickTime;
+  if (startPronounce) {
+    const currentTime = Date.now();
+    const timeSinceLastClick = currentTime - lastClickTime;
 
-        // Only toggle speed if same button clicked consecutively within 3 seconds
-        if (lastClickedButton === "target" && timeSinceLastClick < 3000) {
-            targetTTSSpeed = targetTTSSpeed === "fast" ? "slow" : "fast";
-        } else {
-            // Reset to fast speed for first click or after switching buttons
-            targetTTSSpeed = "fast";
-        }
-
-        lastClickedButton = "target";
-        lastClickTime = currentTime;
-
-        const requestPromise = channel.request("pronounce", {
-            pronouncing: "target",
-            text: window.translateResult.mainMeaning,
-            language: window.translateResult.targetLanguage,
-            speed: targetTTSSpeed,
-        });
-        if (requestPromise && typeof requestPromise.catch === "function") {
-            requestPromise.catch(() => {
-                // TTS 실패 처리는 조용히
-            });
-        }
+    // Only toggle speed if same button clicked consecutively within 3 seconds
+    if (lastClickedButton === "target" && timeSinceLastClick < 3000) {
+      targetTTSSpeed = targetTTSSpeed === "fast" ? "slow" : "fast";
+    } else {
+      // Reset to fast speed for first click or after switching buttons
+      targetTTSSpeed = "fast";
     }
-    return startPronounce;
+
+    lastClickedButton = "target";
+    lastClickTime = currentTime;
+
+    const requestPromise = channel.request("pronounce", {
+      pronouncing: "target",
+      text: window.translateResult.mainMeaning,
+      language: window.translateResult.targetLanguage,
+      speed: targetTTSSpeed,
+    });
+    if (requestPromise && typeof requestPromise.catch === "function") {
+      requestPromise.catch(() => {
+        // TTS 실패 처리는 조용히
+      });
+    }
+  }
+  return startPronounce;
 }
 
 /**
@@ -940,24 +1007,24 @@ function targetPronounce(_, startPronounce) {
  * } action
  */
 function copyContent(_, action) {
-    if (action.copy && action.element) {
-        /**
-         * This line is to make sure the div element is editable before the focus action.
-         * Because of the react mechanism, contenteditable={copyResult} will work after this function is executed.
-         */
-        action.element.setAttribute("contenteditable", "true");
+  if (action.copy && action.element) {
+    /**
+     * This line is to make sure the div element is editable before the focus action.
+     * Because of the react mechanism, contenteditable={copyResult} will work after this function is executed.
+     */
+    action.element.setAttribute("contenteditable", "true");
 
-        action.element.focus();
+    action.element.focus();
 
-        // select all content automatically
-        let range = document.createRange();
-        range.selectNodeContents(action.element);
-        window.getSelection().removeAllRanges();
-        window.getSelection().addRange(range);
+    // select all content automatically
+    let range = document.createRange();
+    range.selectNodeContents(action.element);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
 
-        document.execCommand("copy");
-    } else if (!action.copy) window.getSelection().removeAllRanges();
-    return action.copy;
+    document.execCommand("copy");
+  } else if (!action.copy) window.getSelection().removeAllRanges();
+  return action.copy;
 }
 
 /**
@@ -970,7 +1037,7 @@ function copyContent(_, action) {
  * @param {Event} event keydown event.
  */
 function onKeyDownInTextEditor(event) {
-    event.stopPropagation();
+  event.stopPropagation();
 }
 
 /**
@@ -979,7 +1046,7 @@ function onKeyDownInTextEditor(event) {
  * @param {Event} event keyup event.
  */
 function onKeyUpInTextEditor(event) {
-    event.stopPropagation();
+  event.stopPropagation();
 }
 
 /**
@@ -988,8 +1055,8 @@ function onKeyUpInTextEditor(event) {
  * @param {Event} event focus event.
  */
 function onTextEditorFocused(event) {
-    event.target.addEventListener("keydown", onKeyDownInTextEditor);
-    event.target.addEventListener("keyup", onKeyUpInTextEditor);
+  event.target.addEventListener("keydown", onKeyDownInTextEditor);
+  event.target.addEventListener("keyup", onKeyUpInTextEditor);
 }
 
 /**
@@ -998,8 +1065,8 @@ function onTextEditorFocused(event) {
  * @param {Event} event blur event.
  */
 function onTextEditorBlurred(event) {
-    event.target.removeEventListener("keydown", onKeyDownInTextEditor);
-    event.target.removeEventListener("keyup", onKeyUpInTextEditor);
+  event.target.removeEventListener("keydown", onKeyDownInTextEditor);
+  event.target.removeEventListener("keyup", onKeyUpInTextEditor);
 }
 
 /**
@@ -1008,15 +1075,15 @@ function onTextEditorBlurred(event) {
  * @param {HTMLElement} originalTextEle original text element
  */
 function editOriginalText(originalTextEle) {
-    // Prevent input events from propagation.
-    originalTextEle.addEventListener("focus", onTextEditorFocused);
-    originalTextEle.addEventListener("blur", onTextEditorBlurred);
+  // Prevent input events from propagation.
+  originalTextEle.addEventListener("focus", onTextEditorFocused);
+  originalTextEle.addEventListener("blur", onTextEditorBlurred);
 
-    /**
-     * Make the editable element automatically focus.
-     * Use setTimeout because of https://stackoverflow.com/a/37162116.
-     */
-    setTimeout(() => originalTextEle.focus());
+  /**
+   * Make the editable element automatically focus.
+   * Use setTimeout because of https://stackoverflow.com/a/37162116.
+   */
+  setTimeout(() => originalTextEle.focus());
 }
 
 /**
@@ -1025,21 +1092,21 @@ function editOriginalText(originalTextEle) {
  * @param {HTMLElement} originalTextEle original text element
  */
 function submitEditedText(originalTextEle) {
-    // Allow input events propagation.
-    originalTextEle.removeEventListener("focus", onTextEditorFocused);
-    originalTextEle.removeEventListener("blur", onTextEditorBlurred);
+  // Allow input events propagation.
+  originalTextEle.removeEventListener("focus", onTextEditorFocused);
+  originalTextEle.removeEventListener("blur", onTextEditorBlurred);
 
-    let text = originalTextEle.textContent.trim();
-    if (text.length > 0) {
-        // to make sure the new text is different from the original text
-        if (text.valueOf() !== window.translateResult.originalText.valueOf()) {
-            // Do translating.
-            channel.request("translate", { text });
-        }
-    } else {
-        // Restore original text.
-        originalTextEle.textContent = window.translateResult.originalText;
+  let text = originalTextEle.textContent.trim();
+  if (text.length > 0) {
+    // to make sure the new text is different from the original text
+    if (text.valueOf() !== window.translateResult.originalText.valueOf()) {
+      // Do translating.
+      channel.request("translate", { text });
     }
+  } else {
+    // Restore original text.
+    originalTextEle.textContent = window.translateResult.originalText;
+  }
 }
 
 /**
@@ -1050,12 +1117,12 @@ function submitEditedText(originalTextEle) {
  * @returns new state
  */
 function _setEditing(_, state) {
-    if (state.element) {
-        if (state.edit) {
-            editOriginalText(state.element);
-        } else {
-            submitEditedText(state.element);
-        }
+  if (state.element) {
+    if (state.edit) {
+      editOriginalText(state.element);
+    } else {
+      submitEditedText(state.element);
     }
-    return state.edit;
+  }
+  return state.edit;
 }

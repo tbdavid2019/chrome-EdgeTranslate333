@@ -103,6 +103,10 @@
         "message": "朗讀翻譯結果",
         "description": "朗讀翻譯結果"
     },
+    "OpenGooglePronounce": {
+        "message": "開啟 Google 發音頁面",
+        "description": "開啟 Google 發音頁面"
+    },
     "ClickToExpand": {
         "message": "單擊展開",
         "description": "單擊展開。"
@@ -259,7 +263,7 @@
         "message": "使用谷歌翻譯此頁",
         "description": "使用谷歌翻譯的api翻譯當前頁面。"
     },
-    
+
     "PrivacyPolicy": {
         "message": "隱私政策",
         "description": "隱私政策。"

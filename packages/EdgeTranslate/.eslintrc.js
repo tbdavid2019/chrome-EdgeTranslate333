@@ -13,7 +13,7 @@ module.exports = {
         es6: true,
         "jest/globals": true,
     },
-    extends: ["eslint:recommended", "preact", "prettier", "plugin:prettier/recommended"],
+    extends: ["eslint:recommended", "preact"],
     globals: {
         document: false,
         window: false,
@@ -24,7 +24,7 @@ module.exports = {
         driver: false,
         server: false,
     },
-    plugins: ["html", "prettier"],
+    plugins: ["html"],
     rules: {
         quotes: ["error", "double"],
         "no-multiple-empty-lines": [0, { max: 100 }],

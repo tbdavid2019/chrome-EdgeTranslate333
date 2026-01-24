@@ -103,6 +103,10 @@
         "message": "Прочитать переведённый текст",
         "description": "Произносит переведённый текст."
     },
+    "OpenGooglePronounce": {
+        "message": "Открыть произношение Google",
+        "description": "Открыть произношение Google"
+    },
     "ClickToExpand": {
         "message": "Нажмите, чтобы развернуть",
         "description": "Нажмите, чтобы развернуть."
@@ -259,7 +263,7 @@
         "message": "Перевести страницу с помощью Google",
         "description": "Перевод текущей страницы с помощью Google Translate API."
     },
-    
+
     "PrivacyPolicy": {
         "message": "Политика конфиденциальности",
         "description": "Политика конфиденциальности."

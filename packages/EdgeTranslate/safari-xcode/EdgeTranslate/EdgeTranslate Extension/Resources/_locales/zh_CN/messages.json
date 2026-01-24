@@ -103,6 +103,10 @@
         "message": "朗读翻译结果",
         "description": "朗读翻译结果"
     },
+    "OpenGooglePronounce": {
+        "message": "打开 Google 发音页面",
+        "description": "打开 Google 发音页面"
+    },
     "ClickToExpand": {
         "message": "单击展开",
         "description": "单击展开。"
@@ -259,7 +263,7 @@
         "message": "使用谷歌翻译此页",
         "description": "使用谷歌翻译的api翻译当前页面。"
     },
-    
+
     "PrivacyPolicy": {
         "message": "隐私政策",
         "description": "隐私政策。"

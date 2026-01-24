@@ -103,6 +103,10 @@
         "message": "翻訳されたテキストを読み上げる",
         "description": "翻訳されたテキストを読み上げる"
     },
+    "OpenGooglePronounce": {
+        "message": "Google の発音を開く",
+        "description": "Google の発音を開く"
+    },
     "ClickToExpand": {
         "message": "クリックして展開",
         "description": "クリックして展開。"
@@ -259,7 +263,7 @@
         "message": "Googleでこのページを翻訳",
         "description": "Google翻訳APIで現在のページを翻訳します。"
     },
-    
+
     "PrivacyPolicy": {
         "message": "プライバシーポリシー",
         "description": "プライバシーポリシー"
