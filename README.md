@@ -110,3 +110,17 @@ npm run safari:release
 - 此分支將專案升級為 MV3 與現代瀏覽器相容，保留原有 UX
 
 ---
+
+## Changelog
+
+### v3.3.2 (2026-01-28)
+
+**修復：PDF 檢視器黑屏問題 (Chrome)**
+
+- **問題**：在部分 Chrome 版本中開啟 PDF 時，頁面會顯示一片黑。
+- **原因**：專案使用的 `pdfjs-dist` v5.4.54 依賴 `Promise.withResolvers` API，此 API 在 Chrome 119 之前的版本中不存在。雖然專案中有 `et-pdfjs-polyfill.js` 修補程式，但該檔案存在語法錯誤且未被載入。
+- **修復**：
+  1. 修正 `et-pdfjs-polyfill.js` 的語法錯誤（移除多餘的巢狀判斷並補上缺少的大括號）。
+  2. 在 `viewer.html` 中於 PDF.js 核心腳本之前載入該修補程式，確保相容性。
+
+---
