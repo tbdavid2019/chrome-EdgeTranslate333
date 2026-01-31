@@ -9,7 +9,7 @@ import Cocoa
 import SafariServices
 import WebKit
 
-let extensionBundleIdentifier = "com.edgetranslate.EdgeTranslate.Extension"
+let extensionBundleIdentifier = "com.example.EdgeTranslate333.Extension"
 
 class ViewController: NSViewController, WKNavigationDelegate, WKScriptMessageHandler {
 

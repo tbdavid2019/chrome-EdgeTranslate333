@@ -477,7 +477,7 @@
 					"-framework",
 					SafariServices,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.meapri.EdgeTranslate.Extension;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.EdgeTranslate333.Extension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -512,7 +512,7 @@
 					"-framework",
 					SafariServices,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.meapri.EdgeTranslate.Extension;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.EdgeTranslate333.Extension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -553,7 +553,7 @@
 					"-framework",
 					WebKit,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.meapri.EdgeTranslate;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.EdgeTranslate333;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -595,7 +595,7 @@
 					"-framework",
 					WebKit,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.meapri.EdgeTranslate;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.EdgeTranslate333;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;

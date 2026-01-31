@@ -141,12 +141,6 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   // 只有在生产环境下，才会展示说明页面
   if (process.env.NODE_ENV === "production") {
     if (details.reason === "install") {
-      // 首次安装，引导用户查看wiki
-      chrome.tabs.create({
-        // 为wiki页面创建一个新的标签页
-        url: chrome.i18n.getMessage("WikiLink"),
-      });
-
       // 告知用户数据收集相关信息（在 Safari 下可能不支持 notifications 权限）
       if (
         chrome.notifications &&

@@ -13,7 +13,7 @@ platform :mac do
 
     deliver(
       username: ENV['FASTLANE_APPLE_ID'] || ENV['APPLE_ID'],
-      app_identifier: ENV['FASTLANE_APP_IDENTIFIER'] || 'com.meapri.EdgeTranslate',
+      app_identifier: ENV['FASTLANE_APP_IDENTIFIER'] || 'com.example.EdgeTranslate333',
       pkg: pkg_path,
       skip_metadata: true,
       skip_screenshots: true,
@@ -26,7 +26,7 @@ platform :mac do
   lane :metadata do
     deliver(
       username: ENV['FASTLANE_APPLE_ID'] || ENV['APPLE_ID'],
-      app_identifier: ENV['FASTLANE_APP_IDENTIFIER'] || 'com.meapri.EdgeTranslate',
+      app_identifier: ENV['FASTLANE_APP_IDENTIFIER'] || 'com.example.EdgeTranslate333',
       metadata_path: 'fastlane/metadata',
       screenshots_path: 'fastlane/screenshots',
       skip_screenshots: true,
@@ -40,7 +40,7 @@ platform :mac do
     # If you later add an automated generator, invoke it here before deliver
     deliver(
       username: ENV['FASTLANE_APPLE_ID'] || ENV['APPLE_ID'],
-      app_identifier: ENV['FASTLANE_APP_IDENTIFIER'] || 'com.meapri.EdgeTranslate',
+      app_identifier: ENV['FASTLANE_APP_IDENTIFIER'] || 'com.example.EdgeTranslate333',
       metadata_path: 'fastlane/metadata',
       screenshots_path: 'fastlane/screenshots',
       skip_metadata: true,

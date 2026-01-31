@@ -5,7 +5,7 @@
 - Xcode logged-in Apple ID
 - Environment variables:
   - FASTLANE_APPLE_ID / APPLE_ID
-  - FASTLANE_APP_IDENTIFIER (default: com.meapri.EdgeTranslate)
+  - FASTLANE_APP_IDENTIFIER (default: com.example.EdgeTranslate333)
   - FASTLANE_TEAM_ID / FASTLANE_ITC_TEAM_ID
 
 ## Release

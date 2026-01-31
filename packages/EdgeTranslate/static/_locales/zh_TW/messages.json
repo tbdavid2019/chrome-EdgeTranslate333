@@ -4,7 +4,7 @@
     "description": "方便好用的翻譯輔助工具"
   },
   "Description": {
-    "message": "側看翻譯，閱讀輔助，學習無憂  333",
+    "message": "便捷翻譯，無憂閲讀",
     "description": "應用簡介"
   },
   "ChangeLanguageSetting": {
@@ -156,7 +156,7 @@
     "description": "關於收集數據的提示"
   },
   "PrivacyPolicyLink": {
-    "message": "https://github.com/EdgeTranslate/EdgeTranslate/blob/master/docs/wiki/zh_TW/%E9%9A%B1%E7%A7%81%E6%94%BF%E7%AD%96.md",
+    "message": "https://github.com/tbdavid2019/EdgeTranslate333/blob/master/PRIVACY_POLICY.md",
     "description": "隱私政策鏈接"
   },
   "ExtensionInstalled": {
@@ -164,7 +164,7 @@
     "description": "通知用戶側邊翻譯已安裝。"
   },
   "WikiLink": {
-    "message": "https://github.com/EdgeTranslate/EdgeTranslate/blob/master/docs/wiki/zh_TW/%E6%8F%92%E4%BB%B6%E4%BB%8B%E7%B4%B9.md",
+    "message": "https://github.com/tbdavid2019/EdgeTranslate333/blob/master/README.md",
     "description": "Wiki link."
   },
   "ExtensionUpdated": {
@@ -263,7 +263,6 @@
     "message": "使用 Google 翻譯此頁",
     "description": "使用 Google 翻譯的api翻譯當前頁面。"
   },
-
   "PrivacyPolicy": {
     "message": "隱私政策",
     "description": "隱私政策。"

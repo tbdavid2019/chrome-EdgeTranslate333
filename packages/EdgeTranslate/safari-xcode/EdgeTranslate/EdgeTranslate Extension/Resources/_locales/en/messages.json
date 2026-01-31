@@ -156,7 +156,7 @@
     "description": "Welcome notice (no analytics)."
   },
   "PrivacyPolicyLink": {
-    "message": "https://github.com/EdgeTranslate/EdgeTranslate/blob/master/docs/wiki/en/PrivacyPolicy.md",
+    "message": "https://github.com/tbdavid2019/EdgeTranslate333/blob/master/PRIVACY_POLICY.md",
     "description": "Privacy policy link."
   },
   "PrivacyPolicy": {
@@ -168,7 +168,7 @@
     "description": "Inform user that the extension has been installed."
   },
   "WikiLink": {
-    "message": "https://github.com/EdgeTranslate/EdgeTranslate/blob/master/docs/wiki/en/Introduction.md",
+    "message": "https://github.com/tbdavid2019/EdgeTranslate333",
     "description": "Wiki link."
   },
   "ExtensionUpdated": {
@@ -267,7 +267,6 @@
     "message": "Translate this page with Google",
     "description": "Translate current page with Google translate api."
   },
-
   "Settings": {
     "message": "Settings",
     "description": "Settings"

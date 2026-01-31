@@ -51,7 +51,7 @@ function renderButton() {
     border: 0,
     margin: 0,
     verticalAlign: 0, // fix the style problem in some websites
-    filter: "none", // https://github.com/EdgeTranslate/EdgeTranslate/projects/2#card-58817626
+    filter: "none",
   });
   const translationButton = document.createElement("div");
   Object.assign(translationButton.style, {
@@ -372,7 +372,7 @@ function shouldTranslate() {
    */
   const filterNode = (node) => {
     if (node.nodeType === Node.TEXT_NODE) return true;
-    // BODY is a special case. see https://github.com/EdgeTranslate/EdgeTranslate/issues/531
+    // BODY is a special case.
     if (node.nodeType === Node.ELEMENT_NODE)
       return ["BODY"].includes(node.tagName);
   };

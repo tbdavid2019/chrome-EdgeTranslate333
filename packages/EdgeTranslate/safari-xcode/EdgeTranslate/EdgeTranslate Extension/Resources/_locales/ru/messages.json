@@ -156,7 +156,7 @@
     "description": "Советы по сбору данных"
   },
   "PrivacyPolicyLink": {
-    "message": "https://github.com/EdgeTranslate/EdgeTranslate/blob/master/docs/wiki/en/PrivacyPolicy.md",
+    "message": "https://github.com/tbdavid2019/EdgeTranslate333/blob/master/PRIVACY_POLICY.md",
     "description": "Ссылка на политику конфиденциальности."
   },
   "ExtensionInstalled": {
@@ -164,7 +164,7 @@
     "description": "Уведомление пользователю, об успешной установке расширения."
   },
   "WikiLink": {
-    "message": "https://github.com/EdgeTranslate/EdgeTranslate/blob/master/docs/wiki/en/Introduction.md",
+    "message": "https://github.com/tbdavid2019/EdgeTranslate333",
     "description": "Ссылка на Wiki."
   },
   "ExtensionUpdated": {
@@ -263,7 +263,6 @@
     "message": "Перевести страницу с помощью Google",
     "description": "Перевод текущей страницы с помощью Google Translate API."
   },
-
   "PrivacyPolicy": {
     "message": "Политика конфиденциальности",
     "description": "Политика конфиденциальности."
