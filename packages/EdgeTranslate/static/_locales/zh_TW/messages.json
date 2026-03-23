@@ -156,7 +156,7 @@
     "description": "關於收集數據的提示"
   },
   "PrivacyPolicyLink": {
-    "message": "https://github.com/tbdavid2019/EdgeTranslate333/blob/master/PRIVACY_POLICY.md",
+    "message": "https://github.com/tbdavid2019/chrome-EdgeTranslate333/blob/master/PRIVACY_POLICY.md",
     "description": "隱私政策鏈接"
   },
   "ExtensionInstalled": {
@@ -164,7 +164,7 @@
     "description": "通知用戶側邊翻譯已安裝。"
   },
   "WikiLink": {
-    "message": "https://github.com/tbdavid2019/EdgeTranslate333/blob/master/README.md",
+    "message": "https://github.com/tbdavid2019/chrome-EdgeTranslate333/blob/master/README.md",
     "description": "Wiki link."
   },
   "ExtensionUpdated": {

@@ -1,4 +1,4 @@
-# EdgeTranslate333
+# EdgeTranslate333 (v3.3.6)
 
 本專案已依照 Manifest V3 全面重構，符合現行瀏覽器政策與建置流程，重點在提升穩定性與可維護性。
 

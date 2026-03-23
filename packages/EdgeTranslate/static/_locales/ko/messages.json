@@ -156,7 +156,7 @@
     "description": "환영 알림(통계 없음)"
   },
   "PrivacyPolicyLink": {
-    "message": "https://github.com/tbdavid2019/EdgeTranslate333/blob/master/PRIVACY_POLICY.md",
+    "message": "https://github.com/tbdavid2019/chrome-EdgeTranslate333/blob/master/PRIVACY_POLICY.md",
     "description": "프로젝트 링크"
   },
   "ExtensionInstalled": {
@@ -164,7 +164,7 @@
     "description": "설치 알림"
   },
   "WikiLink": {
-    "message": "https://github.com/tbdavid2019/EdgeTranslate333",
+    "message": "https://github.com/tbdavid2019/chrome-EdgeTranslate333",
     "description": "위키 링크"
   },
   "ExtensionUpdated": {

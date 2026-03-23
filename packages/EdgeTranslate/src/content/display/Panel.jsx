@@ -151,6 +151,24 @@ async function pickBestVoice(lang) {
   const list = cachedVoices || (await loadVoices());
   if (!list || !list.length) return { lang: normalized, voice: null };
 
+  // Read user preference from storage
+  try {
+    const result = await new Promise(resolve => chrome.storage.sync.get("TTSVoiceSettings", resolve));
+    if (result && result.TTSVoiceSettings) {
+      const baseLang = (normalized || "").split("-")[0].toLowerCase();
+      const userSelectedUri = result.TTSVoiceSettings[baseLang];
+      if (userSelectedUri) {
+        const userVoice = list.find(v => v.voiceURI === userSelectedUri);
+        if (userVoice) {
+          lastVoiceByLang.set(cacheKey, userVoice);
+          return { lang: normalized, voice: userVoice };
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("Error reading TTSVoiceSettings", e);
+  }
+
   // 1) 1차 필터: 언어 코드 베이스가 일치하는 보이스 우선 (예: ko-*, en-*)
   const base = (normalized || "").split("-")[0].toLowerCase();
   // Pre-filter once for language base; this reduces scoring work

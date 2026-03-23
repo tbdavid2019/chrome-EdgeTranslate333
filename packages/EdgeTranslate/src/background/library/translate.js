@@ -205,6 +205,8 @@ class TranslatorManager {
         this.channel.provide("pronounce", (params) => {
             let speed = params.speed;
             if (!speed) {
+                // If not provided, toggle the global speed preference. First click should be fast.
+                if (!this.TTS_SPEED) this.TTS_SPEED = "fast";
                 speed = this.TTS_SPEED;
                 this.TTS_SPEED = speed === "fast" ? "slow" : "fast";
             }

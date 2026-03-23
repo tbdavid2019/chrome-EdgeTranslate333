@@ -1,8 +1,8 @@
 {
   "name": "__MSG_AppName__",
   "description": "__MSG_Description__",
-  "version": "3.3.4",
-  "homepage_url": "https://github.com/tbdavid2019/EdgeTranslate333",
+  "version": "3.3.6",
+  "homepage_url": "https://github.com/tbdavid2019/chrome-EdgeTranslate333",
   "default_locale": "zh_TW",
   "background": {
     "service_worker": "./background/background.js",

@@ -60,6 +60,13 @@ window.onload = () => {
   );
 
   /**
+   * Initialize custom Voice Settings
+   */
+  getOrSetDefaultSettings(["languageSetting", "TTSVoiceSettings"], DEFAULT_SETTINGS).then((result) => {
+    initVoiceSettings(result.TTSVoiceSettings, result.languageSetting);
+  });
+
+  /**
    * initiate and update settings
    * attribute "setting-type": indicate the setting type of one option
    * attribute "setting-path": indicate the nested setting path. used to locate the path of one setting item in chrome storage
@@ -146,6 +153,102 @@ window.onload = () => {
     }
   });
 };
+
+/**
+ * Initialize Voice Settings
+ */
+function initVoiceSettings(ttsSettings, langSetting) {
+  const langSelect = document.getElementById("voice-language-select");
+  const voiceSelect = document.getElementById("voice-select");
+  const previewBtn = document.getElementById("preview-voice-btn");
+  if (!langSelect || !voiceSelect) return;
+
+  // Populate languages
+  const langs = ["Auto", "English", "Chinese", "Japanese", "Korean", "French", "Spanish", "German", "Russian"];
+  const langCodes = ["auto", "en", "zh", "ja", "ko", "fr", "es", "de", "ru"];
+  
+  langCodes.forEach((code, i) => {
+    langSelect.options.add(new Option(langs[i], code));
+  });
+
+  let voices = [];
+  let currentLang = "en"; // Default testing lang
+  if (langSetting && langSetting.tl) {
+      const base = langSetting.tl.split('-')[0].toLowerCase();
+      if (langCodes.includes(base)) {
+          currentLang = base;
+      }
+  }
+  langSelect.value = currentLang;
+
+  const populateVoices = () => {
+    voiceSelect.innerHTML = "";
+    const filteredVoices = currentLang === "auto" ? voices : voices.filter(v => v.lang.toLowerCase().startsWith(currentLang));
+    
+    // Add default option
+    voiceSelect.options.add(new Option(chrome.i18n.getMessage("Default") || "Default (Auto)", "default"));
+    
+    filteredVoices.forEach(v => {
+      voiceSelect.options.add(new Option(`${v.name} (${v.lang})`, v.voiceURI));
+    });
+
+    const savedURI = ttsSettings[currentLang];
+    if (savedURI) {
+      voiceSelect.value = savedURI;
+    } else {
+      voiceSelect.value = "default";
+    }
+  };
+
+  const loadVoices = () => {
+    voices = speechSynthesis.getVoices();
+    if (voices.length > 0) populateVoices();
+  };
+
+  loadVoices();
+  if (speechSynthesis.onvoiceschanged !== undefined) {
+    speechSynthesis.onvoiceschanged = loadVoices;
+  }
+
+  langSelect.onchange = (e) => {
+    currentLang = e.target.value;
+    populateVoices();
+  };
+
+  voiceSelect.onchange = (e) => {
+    const uri = e.target.value;
+    if (uri === "default") {
+      delete ttsSettings[currentLang];
+    } else {
+      ttsSettings[currentLang] = uri;
+    }
+    chrome.storage.sync.set({ TTSVoiceSettings: ttsSettings });
+  };
+
+  if (previewBtn) {
+    previewBtn.onclick = () => {
+      const textMap = {
+        en: "Hello, this is a test.",
+        zh: "你好，這是一個測試。",
+        ja: "こんにちは、これはテストです。",
+        ko: "안녕하세요, 이것은 테스트입니다.",
+        es: "Hola, esto es una prueba.",
+        fr: "Bonjour, ceci est un test.",
+        de: "Hallo, dies ist ein Test.",
+        ru: "Здравствуйте, это тест."
+      };
+      
+      const utter = new SpeechSynthesisUtterance(textMap[currentLang] || "Test");
+      const uri = voiceSelect.value;
+      if (uri && uri !== "default") {
+        const selectedVoice = voices.find(v => v.voiceURI === uri);
+        if (selectedVoice) utter.voice = selectedVoice;
+      }
+      speechSynthesis.cancel();
+      speechSynthesis.speak(utter);
+    };
+  }
+}
 
 /**
  * Set up hybrid translate config.

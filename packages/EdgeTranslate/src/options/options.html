@@ -178,6 +178,40 @@
 
         <label
           class="setting-title i18n"
+          data-i18n-name="VoiceSettings"
+        >Voice Settings</label>
+        <div id="voice-settings">
+          <div class="row">
+            <div class="column">
+              <label
+                for="voice-language-select"
+                class="checked-label i18n"
+                data-i18n-name="SelectLanguage"
+                data-insert-pos="afterBegin"
+              >
+                <select id="voice-language-select"></select>
+              </label>
+            </div>
+            <div class="column">
+              <label
+                for="voice-select"
+                class="checked-label i18n"
+                data-i18n-name="SelectVoice"
+                data-insert-pos="afterBegin"
+              >
+                <select id="voice-select"></select>
+              </label>
+            </div>
+          </div>
+          <div class="row">
+             <div class="column">
+               <button id="preview-voice-btn" class="i18n" data-i18n-name="PreviewVoice">Preview</button>
+             </div>
+          </div>
+        </div>
+
+        <label
+          class="setting-title i18n"
           data-i18n-name="HybridTranslatorConfig"
         ></label>
         <div class="row">
@@ -439,10 +473,10 @@
       </div>
       <footer>
         <a
-          href="https://github.com/tbdavid2019/EdgeTranslate333"
+          href="https://github.com/tbdavid2019/chrome-EdgeTranslate333"
           target="blank"
         >
-          https://github.com/tbdavid2019/EdgeTranslate333
+          https://github.com/tbdavid2019/chrome-EdgeTranslate333
         </a>
       </footer>
     </div>

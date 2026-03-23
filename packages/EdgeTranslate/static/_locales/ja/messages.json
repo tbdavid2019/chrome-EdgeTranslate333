@@ -156,7 +156,7 @@
     "description": "統計情報収集のお知らせ"
   },
   "PrivacyPolicyLink": {
-    "message": "https://github.com/tbdavid2019/EdgeTranslate333/blob/master/PRIVACY_POLICY.md",
+    "message": "https://github.com/tbdavid2019/chrome-EdgeTranslate333/blob/master/PRIVACY_POLICY.md",
     "description": "Privacy policy link."
   },
   "ExtensionInstalled": {
@@ -164,7 +164,7 @@
     "description": "拡張機能がインストールされたことをユーザーに通知する。"
   },
   "WikiLink": {
-    "message": "https://github.com/tbdavid2019/EdgeTranslate333",
+    "message": "https://github.com/tbdavid2019/chrome-EdgeTranslate333",
     "description": "Wiki link."
   },
   "ExtensionUpdated": {

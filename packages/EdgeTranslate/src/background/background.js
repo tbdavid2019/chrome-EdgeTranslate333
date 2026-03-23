@@ -199,17 +199,25 @@ chrome.runtime.onStartup.addListener(() => {
  */
 const channel = new Channel();
 
-channel.provide("open_google_pronounce", (params) => {
+channel.provide("play_google_tts", (params) => {
   const text = typeof params?.text === "string" ? params.text.trim() : "";
+  const lang = params?.language || "en";
   if (!text) return Promise.resolve(false);
 
-  const query = `how to pronounce ${text}`;
-  const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-
-  return promiseTabs
-    .create({ url })
-    .then(() => true)
-    .catch(() => false);
+  return new Promise((resolve) => {
+    try {
+      const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=${lang}&client=tw-ob`;
+      
+      // Since background relies on service worker, trying to play audio directly requires an offscreen document
+      // Let's create an offscreen document or inject a script to play it.
+      // But actually, we can just return the URL, and let the content script play it.
+      // OR better, we just send it back to the channel as a resolve.
+      // Resolving the URL back to content script is the most reliable.
+      resolve({ url });
+    } catch (e) {
+      resolve(false);
+    }
+  });
 });
 
 /**

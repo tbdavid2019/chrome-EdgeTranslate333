@@ -26,17 +26,21 @@ let lastClickTime = 0;
 const channel = new Channel();
 const notifier = new Notifier("center");
 
-const openGooglePronounce = (text) => {
+const openGooglePronounce = async (text, language) => {
   const queryText = typeof text === "string" ? text.trim() : "";
   if (!queryText) return;
 
-  const requestPromise = channel.request("open_google_pronounce", {
-    text: queryText,
-  });
-  if (requestPromise && typeof requestPromise.catch === "function") {
-    requestPromise.catch(() => {
-      // 실패 시 조용히 처리
+  try {
+    const response = await channel.request("play_google_tts", {
+      text: queryText,
+      language: language || "en"
     });
+    if (response && response.url) {
+      const audio = new Audio(response.url);
+      audio.play().catch(e => console.error("Audio play failed", e));
+    }
+  } catch (e) {
+    // 실패 시 조용히 처리
   }
 };
 

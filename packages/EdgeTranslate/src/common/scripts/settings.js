@@ -75,6 +75,7 @@ const DEFAULT_SETTINGS = {
     "examples",
   ],
   HidePageTranslatorBanner: false,
+  TTSVoiceSettings: {},
 };
 
 /**
