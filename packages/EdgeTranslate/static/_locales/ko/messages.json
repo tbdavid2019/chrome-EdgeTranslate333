@@ -279,6 +279,42 @@
     "message": "다크 모드",
     "description": "다크 모드"
   },
+  "ThemeMode": {
+    "message": "테마",
+    "description": "Theme selector"
+  },
+  "ThemeModeAuto": {
+    "message": "자동(시스템 따름)",
+    "description": "Automatic theme mode"
+  },
+  "ThemeModeLight": {
+    "message": "라이트",
+    "description": "Light theme mode"
+  },
+  "ThemeModeDark": {
+    "message": "다크",
+    "description": "Dark theme mode"
+  },
+  "ResetTTSAppearanceTitle": {
+    "message": "TTS 및 테마 설정 초기화",
+    "description": "Reset preference title"
+  },
+  "ResetTTSAppearanceDescription": {
+    "message": "저장된 음성 선택과 테마 오버라이드를 지워 오래된 설치 환경을 자동 기본값으로 되돌립니다.",
+    "description": "Reset preference description"
+  },
+  "ResetTTSAppearanceButton": {
+    "message": "설정 초기화",
+    "description": "Reset preference button"
+  },
+  "ResetTTSAppearanceConfirm": {
+    "message": "저장된 TTS 음성과 테마 설정을 지금 초기화할까요?",
+    "description": "Reset preference confirmation"
+  },
+  "ResetTTSAppearanceDone": {
+    "message": "TTS 및 테마 설정을 초기화했습니다.",
+    "description": "Reset preference completion message"
+  },
   "SelectTranslatePosition": {
     "message": "번역 버튼 위치",
     "description": "버튼 위치 선택"

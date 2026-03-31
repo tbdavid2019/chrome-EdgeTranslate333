@@ -279,6 +279,42 @@
     "message": "暗黑模式",
     "description": "暗黑模式"
   },
+  "ThemeMode": {
+    "message": "主题",
+    "description": "Theme selector"
+  },
+  "ThemeModeAuto": {
+    "message": "自动（跟随系统）",
+    "description": "Automatic theme mode"
+  },
+  "ThemeModeLight": {
+    "message": "浅色",
+    "description": "Light theme mode"
+  },
+  "ThemeModeDark": {
+    "message": "深色",
+    "description": "Dark theme mode"
+  },
+  "ResetTTSAppearanceTitle": {
+    "message": "重置 TTS 与主题偏好",
+    "description": "Reset preference title"
+  },
+  "ResetTTSAppearanceDescription": {
+    "message": "清除已保存的语音角色与主题覆盖设置，让旧安装环境恢复为自动默认值。",
+    "description": "Reset preference description"
+  },
+  "ResetTTSAppearanceButton": {
+    "message": "重置偏好",
+    "description": "Reset preference button"
+  },
+  "ResetTTSAppearanceConfirm": {
+    "message": "现在要重置已保存的 TTS 语音与主题偏好吗？",
+    "description": "Reset preference confirmation"
+  },
+  "ResetTTSAppearanceDone": {
+    "message": "TTS 与主题偏好已重置。",
+    "description": "Reset preference completion message"
+  },
   "SelectTranslatePosition": {
     "message": "翻译按钮位置",
     "description": "翻译按钮位置"

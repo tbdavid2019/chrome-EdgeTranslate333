@@ -1,4 +1,9 @@
 import { LANGUAGES } from "@edge_translate/translators";
+import {
+  buildAppearanceSettings,
+  resolveAppearanceState,
+  watchSystemTheme,
+} from "common/scripts/appearance.js";
 import Channel from "common/scripts/channel.js";
 import { i18nHTML } from "common/scripts/common.js";
 import {
@@ -26,8 +31,27 @@ let darkModeToggle = document.getElementById("dark-mode");
  */
 window.onload = function () {
   i18nHTML();
+  const matchMediaFn =
+    typeof window !== "undefined" && typeof window.matchMedia === "function"
+      ? window.matchMedia.bind(window)
+      : undefined;
   const setDarkModeClass = (enabled) => {
     document.documentElement.classList.toggle("dark", !!enabled);
+  };
+  const applyAppearance = (appearance) => {
+    const state = resolveAppearanceState(appearance, {
+      matchMedia: matchMediaFn,
+    });
+    setDarkModeClass(state.isDark);
+
+    if (darkModeToggle) {
+      darkModeToggle.checked = state.isDark;
+      darkModeToggle.indeterminate = state.themeMode === "auto";
+      darkModeToggle.title =
+        state.themeMode === "auto"
+          ? chrome.i18n.getMessage("ThemeModeAuto")
+          : "";
+    }
   };
   // 페이지 번역 UI 전면 제거
   const pageTranslateRow = document.getElementById("page-translate");
@@ -75,12 +99,11 @@ window.onload = function () {
 
   if (darkModeToggle) {
     darkModeToggle.onchange = () => {
-      getOrSetDefaultSettings("Appearance", DEFAULT_SETTINGS).then((result) => {
-        let Appearance = result.Appearance;
-        Appearance["DarkMode"] = darkModeToggle.checked;
-        saveOption("Appearance", Appearance);
-        setDarkModeClass(darkModeToggle.checked);
-      });
+      const appearance = buildAppearanceSettings(
+        darkModeToggle.checked ? "dark" : "light",
+      );
+      saveOption("Appearance", appearance);
+      applyAppearance(appearance);
     };
   }
 
@@ -91,10 +114,7 @@ window.onload = function () {
   ).then((result) => {
     let OtherSettings = result.OtherSettings;
     let languageSetting = result.languageSetting;
-    setDarkModeClass(result.Appearance?.DarkMode);
-    if (darkModeToggle) {
-      darkModeToggle.checked = result.Appearance?.DarkMode;
-    }
+    applyAppearance(result.Appearance);
 
     // 根据源语言设定更新
     if (languageSetting.sl === "auto") {
@@ -131,6 +151,19 @@ window.onload = function () {
 
     showSourceTarget(); // show source language and target language in input placeholder
   });
+
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== "sync" || !changes.Appearance) return;
+    applyAppearance(changes.Appearance.newValue);
+  });
+
+  watchSystemTheme(() => {
+    getOrSetDefaultSettings("Appearance", DEFAULT_SETTINGS).then((result) => {
+      if (resolveAppearanceState(result.Appearance).themeMode === "auto") {
+        applyAppearance(result.Appearance);
+      }
+    });
+  }, matchMediaFn);
   // 统一添加事件监听
   addEventListener();
 };

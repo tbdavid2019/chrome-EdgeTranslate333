@@ -1,8 +1,13 @@
 import Channel from "common/scripts/channel.js";
+import {
+  buildAppearanceSettings,
+  resolveAppearanceState,
+} from "common/scripts/appearance.js";
 import { i18nHTML } from "common/scripts/common.js";
 import {
   DEFAULT_SETTINGS,
   getOrSetDefaultSettings,
+  resetTTSAndAppearancePreferences,
 } from "common/scripts/settings.js";
 
 /**
@@ -15,10 +20,47 @@ const channel = new Channel();
  */
 window.onload = () => {
   i18nHTML();
+  const matchMediaFn =
+    typeof window !== "undefined" && typeof window.matchMedia === "function"
+      ? window.matchMedia.bind(window)
+      : undefined;
 
   const setDarkModeClass = (enabled) => {
     document.documentElement.classList.toggle("dark", !!enabled);
   };
+  const applyAppearance = (appearance) => {
+    const { isDark } = resolveAppearanceState(appearance, {
+      matchMedia: matchMediaFn,
+    });
+    setDarkModeClass(isDark);
+  };
+  const themeModeSelect = document.getElementById("theme-mode");
+  const resetButton = document.getElementById("reset-tts-appearance");
+
+  if (themeModeSelect) {
+    themeModeSelect.options.add(
+      new Option(chrome.i18n.getMessage("ThemeModeAuto"), "auto"),
+    );
+    themeModeSelect.options.add(
+      new Option(chrome.i18n.getMessage("ThemeModeLight"), "light"),
+    );
+    themeModeSelect.options.add(
+      new Option(chrome.i18n.getMessage("ThemeModeDark"), "dark"),
+    );
+  }
+
+  if (resetButton) {
+    resetButton.onclick = async () => {
+      const confirmed = window.confirm(
+        chrome.i18n.getMessage("ResetTTSAppearanceConfirm"),
+      );
+      if (!confirmed) return;
+
+      await resetTTSAndAppearancePreferences();
+      window.alert(chrome.i18n.getMessage("ResetTTSAppearanceDone"));
+      window.location.reload();
+    };
+  }
 
   // 设置不同语言的隐私政策链接（요소가 있으면 설정）
   const PrivacyPolicyLink = document.getElementById("PrivacyPolicyLink");
@@ -72,12 +114,18 @@ window.onload = () => {
    * attribute "setting-path": indicate the nested setting path. used to locate the path of one setting item in chrome storage
    */
   getOrSetDefaultSettings(undefined, DEFAULT_SETTINGS).then((result) => {
-    setDarkModeClass(result.Appearance?.DarkMode);
+    applyAppearance(result.Appearance);
     let inputElements = document.getElementsByTagName("input");
+    let selectElements = document.getElementsByTagName("select");
     const selectTranslatePositionElement = document.getElementById(
       "select-translate-position",
     );
-    for (let element of [...inputElements, selectTranslatePositionElement]) {
+    for (let element of [
+      ...inputElements,
+      ...selectElements,
+      selectTranslatePositionElement,
+    ]) {
+      if (!element || !element.getAttribute("setting-path")) continue;
       let settingItemPath = element.getAttribute("setting-path").split(/\s/g);
       let settingItemValue = getSetting(result, settingItemPath);
 
@@ -133,6 +181,11 @@ window.onload = () => {
           }
           break;
         case "select":
+          if (settingItemPath.join(".") === "Appearance.ThemeMode") {
+            settingItemValue = resolveAppearanceState(result.Appearance, {
+              matchMedia: matchMediaFn,
+            }).themeMode;
+          }
           element.value = settingItemValue;
           // update setting value
           element.onchange = (event) => {
@@ -140,11 +193,17 @@ window.onload = () => {
             const settingItemPath = target
               .getAttribute("setting-path")
               .split(/\s/g);
-            saveOption(
-              result,
-              settingItemPath,
-              target.options[target.selectedIndex].value,
-            );
+            const nextValue = target.options[target.selectedIndex].value;
+
+            if (settingItemPath.join(".") === "Appearance.ThemeMode") {
+              const appearance = buildAppearanceSettings(nextValue);
+              result.Appearance = appearance;
+              chrome.storage.sync.set({ Appearance: appearance });
+              applyAppearance(appearance);
+              return;
+            }
+
+            saveOption(result, settingItemPath, nextValue);
           };
           break;
         default:

@@ -279,6 +279,42 @@
     "message": "Темная тема",
     "description": "Темная тема"
   },
+  "ThemeMode": {
+    "message": "Тема",
+    "description": "Theme selector"
+  },
+  "ThemeModeAuto": {
+    "message": "Авто (как в системе)",
+    "description": "Automatic theme mode"
+  },
+  "ThemeModeLight": {
+    "message": "Светлая",
+    "description": "Light theme mode"
+  },
+  "ThemeModeDark": {
+    "message": "Тёмная",
+    "description": "Dark theme mode"
+  },
+  "ResetTTSAppearanceTitle": {
+    "message": "Сбросить настройки TTS и темы",
+    "description": "Reset preference title"
+  },
+  "ResetTTSAppearanceDescription": {
+    "message": "Очищает сохранённый выбор голоса и переопределения темы, чтобы старые установки вернулись к автоматическим значениям.",
+    "description": "Reset preference description"
+  },
+  "ResetTTSAppearanceButton": {
+    "message": "Сбросить настройки",
+    "description": "Reset preference button"
+  },
+  "ResetTTSAppearanceConfirm": {
+    "message": "Сбросить сохранённые настройки голоса TTS и темы сейчас?",
+    "description": "Reset preference confirmation"
+  },
+  "ResetTTSAppearanceDone": {
+    "message": "Настройки TTS и темы сброшены.",
+    "description": "Reset preference completion message"
+  },
   "SelectTranslatePosition": {
     "message": "Расположение кнопки перевода",
     "description": "Расположение кнопки перевода"

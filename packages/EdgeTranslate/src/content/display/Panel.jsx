@@ -6,6 +6,10 @@ import styled, { createGlobalStyle, ThemeProvider } from "styled-components";
 import root from "react-shadow/styled-components";
 import SimpleBar from "simplebar-react";
 import SimpleBarStyle from "simplebar-react/dist/simplebar.min.css";
+import {
+  resolveAppearanceState,
+  watchSystemTheme,
+} from "common/scripts/appearance.js";
 import Channel from "common/scripts/channel.js";
 import { checkTimestamp } from "./utils.js";
 import Moveable from "./library/moveable/moveable.js";
@@ -221,6 +225,11 @@ export default function ResultPanel() {
   // state of display type("floating" | "fixed")
   const [displayType, setDisplayType] = useState("floating");
   const [isDark, setIsDark] = useState(false);
+  const appearanceRef = useRef(DEFAULT_SETTINGS.Appearance);
+  const matchMediaFn =
+    typeof window !== "undefined" && typeof window.matchMedia === "function"
+      ? window.matchMedia.bind(window)
+      : undefined;
 
   const containerElRef = useRef(), // the container of translation panel.
     panelElRef = useRef(), // panel element
@@ -232,6 +241,14 @@ export default function ResultPanel() {
   // store the moveable object returned by moveable.js
   const moveablePanelRef = useRef(null);
   const simplebarRef = useRef();
+  const applyAppearance = useCallback((appearance) => {
+    appearanceRef.current = appearance || {};
+    setIsDark(
+      resolveAppearanceState(appearanceRef.current, {
+        matchMedia: matchMediaFn,
+      }).isDark,
+    );
+  }, [matchMediaFn]);
 
   // 기억된 부동 패널 위치(사용자가 드래그로 이동한 경우)
   const lastFloatingPosRef = useRef(null); // { x: number, y: number }
@@ -466,16 +483,21 @@ export default function ResultPanel() {
     });
 
     getOrSetDefaultSettings("Appearance", DEFAULT_SETTINGS).then((result) => {
-      setIsDark(!!result.Appearance?.DarkMode);
+      applyAppearance(result.Appearance);
     });
 
     const onStorageChange = (changes, area) => {
       if (area !== "sync") return;
       if (changes.Appearance) {
-        setIsDark(!!changes.Appearance.newValue?.DarkMode);
+        applyAppearance(changes.Appearance.newValue);
       }
     };
     chrome.storage.onChanged.addListener(onStorageChange);
+    const stopWatchingTheme = watchSystemTheme(() => {
+      if (resolveAppearanceState(appearanceRef.current).themeMode === "auto") {
+        applyAppearance(appearanceRef.current);
+      }
+    }, matchMediaFn);
 
     /*
      * COMMUNICATE WITH BACKGROUND MODULE
@@ -575,10 +597,11 @@ export default function ResultPanel() {
 
     return () => {
       chrome.storage.onChanged.removeListener(onStorageChange);
+      stopWatchingTheme();
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [applyAppearance, matchMediaFn]);
 
   /**
    * When status of result panel is changed(open or close), this function will be triggered.

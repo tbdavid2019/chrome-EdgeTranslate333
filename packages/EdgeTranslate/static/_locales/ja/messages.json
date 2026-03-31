@@ -279,6 +279,42 @@
     "message": "ダークモード",
     "description": "ダークモード"
   },
+  "ThemeMode": {
+    "message": "テーマ",
+    "description": "Theme selector"
+  },
+  "ThemeModeAuto": {
+    "message": "自動（システムに従う）",
+    "description": "Automatic theme mode"
+  },
+  "ThemeModeLight": {
+    "message": "ライト",
+    "description": "Light theme mode"
+  },
+  "ThemeModeDark": {
+    "message": "ダーク",
+    "description": "Dark theme mode"
+  },
+  "ResetTTSAppearanceTitle": {
+    "message": "TTS とテーマ設定をリセット",
+    "description": "Reset preference title"
+  },
+  "ResetTTSAppearanceDescription": {
+    "message": "保存済みの音声選択とテーマ上書きを削除し、古いインストールを自動設定に戻します。",
+    "description": "Reset preference description"
+  },
+  "ResetTTSAppearanceButton": {
+    "message": "設定をリセット",
+    "description": "Reset preference button"
+  },
+  "ResetTTSAppearanceConfirm": {
+    "message": "保存済みの TTS 音声とテーマ設定を今すぐリセットしますか？",
+    "description": "Reset preference confirmation"
+  },
+  "ResetTTSAppearanceDone": {
+    "message": "TTS とテーマ設定をリセットしました。",
+    "description": "Reset preference completion message"
+  },
   "SelectTranslatePosition": {
     "message": "翻訳ボタン位置",
     "description": "翻訳ボタン位置"

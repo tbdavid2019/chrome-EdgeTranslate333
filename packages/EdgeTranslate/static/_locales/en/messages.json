@@ -279,6 +279,42 @@
     "message": "Dark Mode",
     "description": "Dark Mode"
   },
+  "ThemeMode": {
+    "message": "Theme",
+    "description": "Theme selector"
+  },
+  "ThemeModeAuto": {
+    "message": "Auto (follow system)",
+    "description": "Automatic theme mode"
+  },
+  "ThemeModeLight": {
+    "message": "Light",
+    "description": "Light theme mode"
+  },
+  "ThemeModeDark": {
+    "message": "Dark",
+    "description": "Dark theme mode"
+  },
+  "ResetTTSAppearanceTitle": {
+    "message": "Reset TTS and theme preferences",
+    "description": "Reset preference title"
+  },
+  "ResetTTSAppearanceDescription": {
+    "message": "Clears saved voice selection and theme overrides so older installs can return to automatic defaults.",
+    "description": "Reset preference description"
+  },
+  "ResetTTSAppearanceButton": {
+    "message": "Reset preferences",
+    "description": "Reset preference button"
+  },
+  "ResetTTSAppearanceConfirm": {
+    "message": "Reset saved TTS voice and theme preferences now?",
+    "description": "Reset preference confirmation"
+  },
+  "ResetTTSAppearanceDone": {
+    "message": "TTS and theme preferences were reset.",
+    "description": "Reset preference completion message"
+  },
   "SelectTranslatePosition": {
     "message": "Translation button location",
     "description": "Select the translation button location"

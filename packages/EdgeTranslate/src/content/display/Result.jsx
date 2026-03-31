@@ -1,7 +1,11 @@
 /** @jsx h */
 import { h, Fragment } from "preact";
-import { useEffect, useRef, useReducer, useState } from "preact/hooks";
+import { useCallback, useEffect, useRef, useReducer, useState } from "preact/hooks";
 import styled, { ThemeProvider } from "styled-components";
+import {
+  resolveAppearanceState,
+  watchSystemTheme,
+} from "common/scripts/appearance.js";
 import Channel from "common/scripts/channel.js";
 import {
   DEFAULT_SETTINGS,
@@ -109,6 +113,11 @@ export default function Result(props) {
   const [textDirection, setTextDirection] = useState("ltr");
 
   const [isDark, setIsDark] = useState(false);
+  const appearanceRef = useRef(DEFAULT_SETTINGS.Appearance);
+  const matchMediaFn =
+    typeof window !== "undefined" && typeof window.matchMedia === "function"
+      ? window.matchMedia.bind(window)
+      : undefined;
 
   /**
    * Whether to fold too long translation content.
@@ -139,6 +148,14 @@ export default function Result(props) {
   // Indicate whether user is editing the original text
   const [editing, setEditing] = useReducer(_setEditing, false);
   const originalTextElRef = useRef();
+  const applyAppearance = useCallback((appearance) => {
+    appearanceRef.current = appearance || {};
+    setIsDark(
+      resolveAppearanceState(appearanceRef.current, {
+        matchMedia: matchMediaFn,
+      }).isDark,
+    );
+  }, [matchMediaFn]);
 
   const TargetContent = (
     <Fragment key={"mainMeaning"}>
@@ -578,9 +595,9 @@ export default function Result(props) {
       setContentFilter(result.TranslateResultFilter);
       setTextDirection(result.LayoutSettings.RTL ? "rtl" : "ltr");
       setFoldLongContent(result.LayoutSettings.FoldLongContent);
-      setIsDark(!!result.Appearance?.DarkMode);
+      applyAppearance(result.Appearance);
     });
-    chrome.storage.onChanged.addListener((changes, area) => {
+    const onStorageChange = (changes, area) => {
       if (area !== "sync") return;
 
       if (changes.ContentDisplayOrder) {
@@ -609,15 +626,23 @@ export default function Result(props) {
       }
 
       if (changes.Appearance) {
-        setIsDark(!!changes.Appearance.newValue?.DarkMode);
+        applyAppearance(changes.Appearance.newValue);
       }
-    });
+    };
+    chrome.storage.onChanged.addListener(onStorageChange);
+    const stopWatchingTheme = watchSystemTheme(() => {
+      if (resolveAppearanceState(appearanceRef.current).themeMode === "auto") {
+        applyAppearance(appearanceRef.current);
+      }
+    }, matchMediaFn);
 
     return () => {
       // remove all of event listeners before destroying the component
       cancelers.forEach((canceler) => canceler());
+      chrome.storage.onChanged.removeListener(onStorageChange);
+      stopWatchingTheme();
     };
-  }, []);
+  }, [applyAppearance, matchMediaFn]);
 
   return (
     <Fragment>

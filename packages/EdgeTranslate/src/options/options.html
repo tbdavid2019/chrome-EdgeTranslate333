@@ -22,20 +22,40 @@
         <div id="appearance-settings">
           <div class="row">
             <div class="column">
-              <input
-                type="checkbox"
-                setting-type="switch"
-                setting-path="Appearance DarkMode"
-                class="switch"
-                id="dark-mode"
-              />
-              <span class="space"></span>
               <label
-                for="dark-mode"
+                for="theme-mode"
                 class="checked-label i18n"
-                data-i18n-name="DarkMode"
-                >Dark Mode</label
+                data-i18n-name="ThemeMode"
+                data-insert-pos="afterBegin"
               >
+                <select
+                  id="theme-mode"
+                  setting-type="select"
+                  setting-path="Appearance ThemeMode"
+                ></select>
+              </label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="column reset-column">
+              <div class="reset-copy">
+                <div
+                  class="reset-title i18n"
+                  data-i18n-name="ResetTTSAppearanceTitle"
+                ></div>
+                <div
+                  class="reset-description i18n"
+                  data-i18n-name="ResetTTSAppearanceDescription"
+                ></div>
+              </div>
+              <button
+                id="reset-tts-appearance"
+                type="button"
+                class="secondary-button i18n"
+                data-i18n-name="ResetTTSAppearanceButton"
+              >
+                Reset
+              </button>
             </div>
           </div>
         </div>

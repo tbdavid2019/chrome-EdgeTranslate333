@@ -19,7 +19,7 @@ const DEFAULT_SETTINGS = {
     SelectTranslatePosition: "TopRight",
   },
   Appearance: {
-    DarkMode: true,
+    ThemeMode: "auto",
   },
   // Default settings of source language and target language
   languageSetting: {
@@ -77,6 +77,11 @@ const DEFAULT_SETTINGS = {
   HidePageTranslatorBanner: false,
   TTSVoiceSettings: {},
 };
+
+const TTS_AND_APPEARANCE_LOCAL_STORAGE_KEYS = [
+  "et_viewer_theme",
+  "et_page_theme",
+];
 
 /**
  * assign default value to settings which are undefined in recursive way
@@ -147,4 +152,25 @@ function getOrSetDefaultSettings(settings, defaults) {
   });
 }
 
-export { DEFAULT_SETTINGS, setDefaultSettings, getOrSetDefaultSettings };
+function resetTTSAndAppearancePreferences() {
+  return new Promise((resolve) => {
+    chrome.storage.sync.remove(["TTSVoiceSettings"], () => {
+      chrome.storage.sync.set({ Appearance: DEFAULT_SETTINGS.Appearance }, () => {
+        try {
+          TTS_AND_APPEARANCE_LOCAL_STORAGE_KEYS.forEach((key) => {
+            localStorage.removeItem(key);
+          });
+        } catch {}
+
+        resolve();
+      });
+    });
+  });
+}
+
+export {
+  DEFAULT_SETTINGS,
+  getOrSetDefaultSettings,
+  resetTTSAndAppearancePreferences,
+  setDefaultSettings,
+};
