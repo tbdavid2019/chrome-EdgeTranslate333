@@ -85,7 +85,7 @@ try {
         const blob = await res.blob();
         const blobUrl = URL.createObjectURL(blob);
         try { createdBlobUrls.add(blobUrl); } catch {}
-        params.set('file', encodeURIComponent(blobUrl));
+        params.set('file', blobUrl);
         history.replaceState(null, '', urlObj.pathname + '?' + params.toString() + urlObj.hash);
       } catch (e) {
         console.warn('[EdgeTranslate] PDF blob rehydration failed:', e);
@@ -98,8 +98,8 @@ try {
         const blobUrl = URL.createObjectURL(blob);
         try { createdBlobUrls.add(blobUrl); } catch {}
         // Preserve original URL for refresh recovery
-        params.set('source', encodeURIComponent(target.href));
-        params.set('file', encodeURIComponent(blobUrl));
+        params.set('source', target.href);
+        params.set('file', blobUrl);
         history.replaceState(null, '', urlObj.pathname + '?' + params.toString() + urlObj.hash);
       } catch (e) {
         console.warn('[EdgeTranslate] PDF preload failed:', e);

@@ -1,10 +1,28 @@
 @import '../common/style/input.styl';
 
+lotus-bg = #f2ecbc;
+lotus-surface = #f7f3d0;
+lotus-surface-alt = #e9dfb5;
+lotus-border = #c9c19f;
+lotus-text = #545464;
+lotus-muted = #716e61;
+lotus-subtle = #8a8980;
+lotus-accent = #4d699b;
+
+tokyo-bg = #222436;
+tokyo-surface = #2a2e45;
+tokyo-border = #3b4261;
+tokyo-text = #c8d3f5;
+tokyo-muted = #b4c0e8;
+tokyo-subtle = #828bb8;
+tokyo-accent = #82aaff;
+
 html, body {
     width: 100%;
     padding: 0;
     margin: 0;
-    background-color: #eeeeee;
+    background-color: lotus-bg;
+    color: lotus-text;
     // 시스템 기본 폰트 스택 적용
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -18,8 +36,9 @@ html, body {
     margin: auto;
     max-width: 840px;
     margin: 0px auto;
-    box-shadow: 0px 0px 50px rgb(200, 200, 200, 0.5);
-    background-color: white;
+    box-shadow: 0px 18px 44px rgba(84, 84, 100, 0.12);
+    background-color: lotus-surface;
+    border: 1px solid rgba(201, 193, 159, 0.75);
 }
 
 header {
@@ -28,7 +47,7 @@ header {
     padding: 5% 0;
     font-size: 64px;
     font-weight: bold;
-    color: color-primary;
+    color: lotus-accent;
     display: flex;
     align-items: center;
 }
@@ -69,13 +88,13 @@ header {
 .reset-description {
     margin-top: 6px;
     font-size: 14px;
-    color: #5f6368;
+    color: lotus-muted;
 }
 
 .secondary-button {
-    border: 1px solid #dadce0;
-    background: #fff;
-    color: #1a73e8;
+    border: 1px solid lotus-border;
+    background: lotus-surface-alt;
+    color: lotus-accent;
     border-radius: 8px;
     padding: 10px 16px;
     cursor: pointer;
@@ -84,7 +103,7 @@ header {
 }
 
 .secondary-button:hover {
-    background: #f8f9fa;
+    background: lotus-bg;
 }
 
 .checked-label {
@@ -113,50 +132,81 @@ footer {
     padding: 5% 0;
     text-align: center;
     font-size: medium;
+    color: lotus-subtle;
 }
 
 // Dark Mode Styles
 .dark {
-    background-color: #202124 !important;
-    color: #e8eaed !important;
+    background-color: tokyo-bg !important;
+    color: tokyo-text !important;
 }
 
 .dark #option {
-    background-color: #292a2d !important;
+    background-color: tokyo-surface !important;
     box-shadow: 0px 0px 50px rgba(0, 0, 0, 0.5) !important;
-    color: #e8eaed !important;
+    color: tokyo-text !important;
+    border-color: tokyo-border !important;
 }
 
 .dark header {
-    color: #8ab4f8 !important;
+    color: tokyo-accent !important;
 }
 
 .dark .setting-title {
-    color: #e8eaed !important;
+    color: tokyo-text !important;
 }
 
 .dark .checked-label, 
 .dark .radio-label, 
 .dark footer {
-    color: #9aa0a6 !important;
+    color: tokyo-muted !important;
 }
 
 .dark .reset-description {
-    color: #9aa0a6 !important;
+    color: tokyo-muted !important;
 }
 
 .dark footer a {
-    color: #8ab4f8 !important;
+    color: tokyo-accent !important;
 }
 
 .dark select {
-    background-color: #3c4043 !important;
-    color: #e8eaed !important;
-    border: 1px solid #5f6368 !important;
+    background-color: tokyo-surface !important;
+    color: tokyo-text !important;
+    border: 1px solid tokyo-border !important;
 }
 
 .dark .secondary-button {
-    background-color: #3c4043 !important;
-    border-color: #5f6368 !important;
-    color: #8ab4f8 !important;
+    background-color: tokyo-surface !important;
+    border-color: tokyo-border !important;
+    color: tokyo-accent !important;
+}
+
+.dark .secondary-button:hover {
+    background-color: #303654 !important;
+}
+
+.dark .checkbox,
+.dark .radio {
+    background-color: tokyo-surface !important;
+    border-color: tokyo-border !important;
+}
+
+.dark .switch {
+    border-color: tokyo-border !important;
+    background: tokyo-border !important;
+}
+
+.dark .switch:before {
+    background-color: tokyo-border !important;
+}
+
+.dark .switch:after {
+    background-color: tokyo-text !important;
+    box-shadow: none !important;
+}
+
+.dark .switch:checked {
+    border-color: tokyo-accent !important;
+    background-color: tokyo-accent !important;
 }

@@ -65,6 +65,16 @@ const shouldShowGooglePronounce = (text, language) => {
   return true;
 };
 
+const shouldShowPronunciationText = (text, language, pronunciation) => {
+  const value = typeof text === "string" ? text.trim() : "";
+  const reading = typeof pronunciation === "string" ? pronunciation.trim() : "";
+  if (!value || !reading) return false;
+  if (isChineseLanguage(language)) return false;
+  if (hasCjkCharacters(value)) return false;
+
+  return true;
+};
+
 /**
  * @param {{
  *   mainMeaning: string;
@@ -161,16 +171,18 @@ export default function Result(props) {
     <Fragment key={"mainMeaning"}>
       {props.mainMeaning?.length > 0 && (
         <Target>
+          <SectionLabel accent>
+            {chrome.i18n.getMessage("Translate")}
+          </SectionLabel>
           <TextLine>
-            <div
+            <PrimaryText
               dir={textDirection}
               contenteditable={copyResult}
               onBlur={() => setCopyResult({ copy: false })}
               ref={translateResultElRef}
-              style={{ paddingLeft: 3 }}
             >
               {props.mainMeaning}
-            </div>
+            </PrimaryText>
             <StyledCopyIcon
               role="button"
               onClick={() =>
@@ -233,13 +245,19 @@ export default function Result(props) {
                   />
                 )}
               {displayTPronunciation && (
-                <PronounceText
-                  dir={textDirection}
-                  DrawerHeight={TextContentDrawerHeight}
-                  DisableDrawer={!foldLongContent}
-                >
-                  {props.tPronunciation}
-                </PronounceText>
+                shouldShowPronunciationText(
+                  props.mainMeaning,
+                  window.translateResult?.targetLanguage,
+                  props.tPronunciation,
+                ) && (
+                  <PronounceText
+                    dir={textDirection}
+                    DrawerHeight={TextContentDrawerHeight}
+                    DisableDrawer={!foldLongContent}
+                  >
+                    {props.tPronunciation}
+                  </PronounceText>
+                )
               )}
             </PronounceLine>
           )}
@@ -252,15 +270,15 @@ export default function Result(props) {
     <Fragment key={"originalText"}>
       {props.originalText?.length > 0 && (
         <Source>
+          <SectionLabel>{chrome.i18n.getMessage("OriginalText")}</SectionLabel>
           <TextLine>
-            <div
+            <SecondaryText
               dir={textDirection}
               contenteditable={editing}
               ref={originalTextElRef}
-              style={{ paddingLeft: 3 }}
             >
               {props.originalText}
-            </div>
+            </SecondaryText>
             {editing ? (
               <StyledEditDoneIcon
                 role="button"
@@ -336,13 +354,19 @@ export default function Result(props) {
                   />
                 )}
               {displaySPronunciation && (
-                <PronounceText
-                  dir={textDirection}
-                  DrawerHeight={TextContentDrawerHeight}
-                  DisableDrawer={!foldLongContent}
-                >
-                  {props.sPronunciation}
-                </PronounceText>
+                shouldShowPronunciationText(
+                  props.originalText,
+                  window.translateResult?.sourceLanguage,
+                  props.sPronunciation,
+                ) && (
+                  <PronounceText
+                    dir={textDirection}
+                    DrawerHeight={TextContentDrawerHeight}
+                    DisableDrawer={!foldLongContent}
+                  >
+                    {props.sPronunciation}
+                  </PronounceText>
+                )
               )}
             </PronounceLine>
           )}
@@ -661,11 +685,17 @@ export default function Result(props) {
 
 const BlockPadding = "10px";
 const BlockMargin = "8px";
-const LightPrimary = "rgba(74, 140, 247, 0.7)";
-const Gray = "#919191";
-const BgDark = "#292a2d";
-const TextDark = "#e8eaed";
-const GrayDark = "#9aa0a6";
+const LightPrimary = "#82aaff";
+const LightPrimarySoft = "#4d699b";
+const Gray = "#716e61";
+const BgLight = "#f7f3d0";
+const BorderLight = "#d3c8a4";
+const TextLight = "#545464";
+const MutedLight = "#8a8980";
+const BgDark = "#2a2e45";
+const TextDark = "#c8d3f5";
+const GrayDark = "#b4c0e8";
+const BorderDark = "#3b4261";
 const BlockContentDrawerHeight = 150; // drawer height for blocks
 const TextContentDrawerHeight = 50; // drawer height for texts
 
@@ -683,22 +713,28 @@ export const Block = styled.div`
   margin: ${BlockMargin};
   margin-top: 0;
   background-color: ${(props) =>
-    props.theme.isDark ? BgDark : "rgb(250, 250, 250)"};
-  color: ${(props) => (props.theme.isDark ? TextDark : "inherit")};
-  border-radius: 10px;
-  /* box-shadow: 0px 3px 6px rgba(127, 127, 127, 0.25); */
-  line-height: 120%;
-  letter-spacing: 0.02em;
+    props.theme.isDark ? BgDark : BgLight};
+  color: ${(props) => (props.theme.isDark ? TextDark : TextLight)};
+  border-radius: 14px;
+  border: 1px solid ${(props) => (props.theme.isDark ? BorderDark : BorderLight)};
+  box-shadow: ${(props) =>
+    props.theme.isDark
+      ? "0 10px 24px rgba(0, 0, 0, 0.16)"
+      : "0 10px 24px rgba(84, 84, 100, 0.06)"};
+  line-height: 1.42;
+  letter-spacing: 0.01em;
 `;
 
 const Source = styled(Block)`
   font-weight: normal;
   white-space: pre-wrap;
+  background-color: ${(props) => (props.theme.isDark ? "#1e2030" : "#fbf7dd")};
 `;
 
 const Target = styled(Block)`
   font-weight: normal;
   white-space: pre-wrap;
+  background-color: ${(props) => (props.theme.isDark ? "#1c2030" : "#fff9dd")};
 `;
 
 const Detail = styled(Block)`
@@ -708,11 +744,46 @@ const Detail = styled(Block)`
 const TextLine = styled.div`
   width: 100%;
   display: flex;
-  margin: 5px 0;
+  margin: 2px 0 0;
   flex-direction: ${(props) =>
     props.theme.textDirection === "ltr" ? "row" : "row-reverse"};
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+`;
+
+const SectionLabel = styled.div`
+  width: 100%;
+  margin-bottom: 10px;
+  color: ${(props) =>
+    props.accent
+      ? props.theme.isDark
+        ? "#ffc777"
+        : "#b35b25"
+      : props.theme.isDark
+        ? "#828bb8"
+        : "#8a8980"};
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+`;
+
+const PrimaryText = styled.div`
+  flex: 1 1 auto;
+  padding-left: 3px;
+  font-size: 1.08rem;
+  line-height: 1.48;
+  font-weight: 650;
+  color: ${(props) => (props.theme.isDark ? "#f6c177" : "#545464")};
+`;
+
+const SecondaryText = styled.div`
+  flex: 1 1 auto;
+  padding-left: 3px;
+  font-size: 1rem;
+  line-height: 1.5;
+  font-weight: 560;
+  color: ${(props) => (props.theme.isDark ? "#e0def4" : "#545464")};
 `;
 
 const StyledEditIcon = styled(EditIcon)`
@@ -720,10 +791,11 @@ const StyledEditIcon = styled(EditIcon)`
   height: 18px;
   fill: ${(props) => (props.theme.isDark ? GrayDark : Gray)};
   flex-shrink: 0;
-  margin-left: 2px;
+  margin-left: 10px;
+  margin-top: 2px;
   transition: fill 0.2s linear;
   &:hover {
-    fill: dimgray;
+    fill: ${(props) => (props.theme.isDark ? TextDark : TextLight)};
   }
 `;
 
@@ -732,10 +804,11 @@ const StyledEditDoneIcon = styled(EditDoneIcon)`
   height: 18px;
   fill: ${(props) => (props.theme.isDark ? GrayDark : Gray)};
   flex-shrink: 0;
-  margin-left: 2px;
+  margin-left: 10px;
+  margin-top: 2px;
   transition: fill 0.2s linear;
   &:hover {
-    fill: dimgray;
+    fill: ${(props) => (props.theme.isDark ? TextDark : TextLight)};
   }
 `;
 
@@ -758,10 +831,11 @@ const StyledCopyIcon = styled(CopyIcon)`
   height: 20px;
   fill: ${(props) => (props.theme.isDark ? GrayDark : Gray)};
   flex-shrink: 0;
-  margin-left: 2px;
+  margin-left: 10px;
+  margin-top: 2px;
   transition: fill 0.2s linear;
   &:hover {
-    fill: dimgray;
+    fill: ${(props) => (props.theme.isDark ? TextDark : TextLight)};
   }
 `;
 
@@ -770,7 +844,7 @@ const StyledPronounceIcon = styled(PronounceIcon)`
   height: 20px;
   padding: 2px;
   margin-right: 10px;
-  fill: ${LightPrimary};
+  fill: ${(props) => (props.theme.isDark ? LightPrimary : LightPrimarySoft)};
   flex-shrink: 0;
   transition: fill 0.2s linear;
   ${(props) =>
@@ -784,7 +858,7 @@ const StyledPronounceIcon = styled(PronounceIcon)`
             `}
 
   &:hover {
-    fill: orange !important;
+    fill: ${(props) => (props.theme.isDark ? "#ffc777" : "#cc6d00")} !important;
   }
 `;
 
@@ -792,7 +866,7 @@ const StyledPronounceLoadingIcon = styled(PronounceLoadingIcon)`
   width: 24px;
   height: 24px;
   margin-right: 10px;
-  fill: ${LightPrimary};
+  fill: ${(props) => (props.theme.isDark ? LightPrimary : LightPrimarySoft)};
   padding: 0;
   flex-shrink: 0;
   cursor: pointer;
@@ -800,15 +874,15 @@ const StyledPronounceLoadingIcon = styled(PronounceLoadingIcon)`
 
   circle {
     fill: none;
-    stroke: ${LightPrimary} !important;
+    stroke: ${(props) => (props.theme.isDark ? LightPrimary : LightPrimarySoft)} !important;
     transition: stroke 0.2s linear;
   }
 
   &:hover {
-    fill: orange !important;
+    fill: ${(props) => (props.theme.isDark ? "#ffc777" : "#cc6d00")} !important;
 
     circle {
-      stroke: orange !important;
+      stroke: ${(props) => (props.theme.isDark ? "#ffc777" : "#cc6d00")} !important;
     }
   }
 `;
@@ -824,7 +898,7 @@ const StyledGooglePronounceIcon = styled(GooglePronounceIcon)`
   height: 20px;
   padding: 2px;
   margin-right: 10px;
-  fill: ${LightPrimary};
+  fill: ${(props) => (props.theme.isDark ? LightPrimary : LightPrimarySoft)};
   flex-shrink: 0;
   transition: fill 0.2s linear;
   ${(props) =>
@@ -837,7 +911,7 @@ const StyledGooglePronounceIcon = styled(GooglePronounceIcon)`
             `}
 
   &:hover {
-    fill: orange !important;
+    fill: ${(props) => (props.theme.isDark ? "#ffc777" : "#cc6d00")} !important;
   }
 `;
 
@@ -852,7 +926,11 @@ const BlockHead = styled.div`
 `;
 
 const BlockHeadTitle = styled.span`
-  font-size: small;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: ${(props) => (props.theme.isDark ? "#828bb8" : "#8a8980")};
   ${(props) =>
     `${props.theme.textDirection === "ltr" ? "margin-left" : "margin-right"}:${BlockPadding}`}
 `;
@@ -873,7 +951,7 @@ const BlockSplitLine = styled.div`
   flex-shrink: 0;
   border: none;
   background: ${(props) =>
-    props.theme.isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.25)"};
+    props.theme.isDark ? "rgba(180, 192, 232, 0.16)" : "rgba(84, 84, 100, 0.18)"};
 `;
 
 const BlockContent = styled(DrawerBlock)`
@@ -887,12 +965,15 @@ const BlockContent = styled(DrawerBlock)`
 `;
 
 const DetailHeadSpot = styled(BlockHeadSpot)`
-  background-color: #00bfa5;
+  background-color: ${(props) => (props.theme.isDark ? "#86e1fc" : "#597b75")};
 `;
 
 const Position = styled.div`
   color: ${(props) => (props.theme.isDark ? GrayDark : Gray)};
-  font-size: smaller;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 `;
 
 const DetailMeaning = styled.div`
@@ -929,7 +1010,7 @@ const SynonymWord = styled.span`
   margin: 0 2px 3px;
   border: 1px solid
     ${(props) =>
-      props.theme.isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.12)"};
+      props.theme.isDark ? "rgba(180, 192, 232, 0.18)" : "rgba(84, 84, 100, 0.14)"};
   border-radius: 32px;
   cursor: pointer;
   font-size: small;
@@ -938,17 +1019,17 @@ const SynonymWord = styled.span`
 const Definition = styled(Block)``;
 
 const DefinitionHeadSpot = styled(BlockHeadSpot)`
-  background-color: #ff4081;
+  background-color: ${(props) => (props.theme.isDark ? "#ff757f" : "#c84053")};
 `;
 
 const DefinitionExample = styled(DetailMeaning)`
-  color: ${(props) => (props.theme.isDark ? GrayDark : "#5f6368")};
+  color: ${(props) => (props.theme.isDark ? GrayDark : MutedLight)};
 `;
 
 const Example = styled(Block)``;
 
 const ExampleHeadSpot = styled(BlockHeadSpot)`
-  background-color: #3d5afe;
+  background-color: ${(props) => (props.theme.isDark ? "#82aaff" : "#4d699b")};
 `;
 
 const ExampleList = styled.ol`
@@ -967,11 +1048,13 @@ const ExampleItem = styled.li`
 
 const ExampleSource = styled.div`
   font-size: medium;
+  line-height: 1.45;
 `;
 
 const ExampleTarget = styled.div`
   padding-top: 5px;
   font-size: medium;
+  line-height: 1.45;
 `;
 
 /**

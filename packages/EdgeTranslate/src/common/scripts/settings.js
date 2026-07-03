@@ -76,6 +76,18 @@ const DEFAULT_SETTINGS = {
   ],
   HidePageTranslatorBanner: false,
   TTSVoiceSettings: {},
+  fixSetting: false,
+  DisplaySetting: {
+    type: "floating",
+    fixedData: {
+      width: 0.28,
+      position: "right",
+    },
+    floatingData: {
+      width: 0.24,
+      height: 0.6,
+    },
+  },
 };
 
 const TTS_AND_APPEARANCE_LOCAL_STORAGE_KEYS = [
@@ -88,25 +100,56 @@ const TTS_AND_APPEARANCE_LOCAL_STORAGE_KEYS = [
  * @param {*} result setting result stored in chrome.storage
  * @param {*} settings default settings
  */
+function cloneSettingValue(value) {
+  if (value instanceof Array) {
+    return value.map((item) => cloneSettingValue(item));
+  }
+
+  if (value && typeof value === "object") {
+    const cloned = {};
+    for (let key in value) {
+      cloned[key] = cloneSettingValue(value[key]);
+    }
+    return cloned;
+  }
+
+  return value;
+}
+
 function setDefaultSettings(result, settings) {
+  let updated = false;
+
   for (let i in settings) {
+    const hasSetting = Object.prototype.hasOwnProperty.call(result, i);
+    const settingValue = settings[i];
+
     // settings[i] contains key-value settings
     if (
-      typeof settings[i] === "object" &&
-      !(settings[i] instanceof Array) &&
-      Object.keys(settings[i]).length > 0
+      settingValue &&
+      typeof settingValue === "object" &&
+      !(settingValue instanceof Array) &&
+      Object.keys(settingValue).length > 0
     ) {
-      if (result[i]) {
-        setDefaultSettings(result[i], settings[i]);
+      if (
+        hasSetting &&
+        result[i] &&
+        typeof result[i] === "object" &&
+        !(result[i] instanceof Array)
+      ) {
+        updated = setDefaultSettings(result[i], settingValue) || updated;
       } else {
         // settings[i] contains several setting items but these have not been set before
-        result[i] = settings[i];
+        result[i] = cloneSettingValue(settingValue);
+        updated = true;
       }
-    } else if (result[i] === undefined) {
+    } else if (!hasSetting || result[i] === undefined) {
       // settings[i] is a single setting item and it has not been set before
-      result[i] = settings[i];
+      result[i] = cloneSettingValue(settingValue);
+      updated = true;
     }
   }
+
+  return updated;
 }
 
 /**
@@ -132,14 +175,26 @@ function getOrSetDefaultSettings(settings, defaults) {
 
     chrome.storage.sync.get(settings, (result) => {
       let updated = false;
+      const resolvedDefaults =
+        typeof defaults === "function" ? defaults(settings) : defaults;
 
       for (let setting of settings) {
-        if (!result[setting]) {
-          if (typeof defaults === "function") {
-            defaults = defaults(settings);
-          }
-          result[setting] = defaults[setting];
+        const hasSetting = Object.prototype.hasOwnProperty.call(result, setting);
+        const defaultValue = resolvedDefaults[setting];
+
+        if (!hasSetting || result[setting] === undefined) {
+          if (defaultValue === undefined) continue;
+          result[setting] = cloneSettingValue(defaultValue);
           updated = true;
+        } else if (
+          defaultValue &&
+          typeof defaultValue === "object" &&
+          !(defaultValue instanceof Array) &&
+          result[setting] &&
+          typeof result[setting] === "object" &&
+          !(result[setting] instanceof Array)
+        ) {
+          updated = setDefaultSettings(result[setting], defaultValue) || updated;
         }
       }
 

@@ -30,10 +30,20 @@ class Channel {
          */
         chrome.runtime.onMessage.addListener(
             ((message, sender, callback) => {
-                let parsed = JSON.parse(message);
+                let parsed;
+                if (typeof message === "string") {
+                    try {
+                        parsed = JSON.parse(message);
+                    } catch (e) {
+                        return; // Not a valid JSON string, ignore safely
+                    }
+                } else if (message && typeof message === "object") {
+                    parsed = message;
+                } else {
+                    return; // Ignore other types of message
+                }
 
                 if (!parsed || !parsed.type) {
-                    console.error(`Bad message: ${message}`);
                     return;
                 }
 

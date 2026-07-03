@@ -16,7 +16,27 @@ html, body, input, select, button, textarea
 	font-variant-ligatures: none
 	font-weight: 500
 
-color-primary = #4a8cf7;
+lotus-bg = #f2ecbc;
+lotus-surface = #f7f3d0;
+lotus-border = #c9c19f;
+lotus-text = #545464;
+lotus-muted = #716e61;
+lotus-subtle = #8a8980;
+lotus-accent = #4d699b;
+lotus-accent-soft = #dcd4ad;
+lotus-danger = #c84053;
+color-primary = lotus-accent;
+tokyo-bg = #222436;
+tokyo-bg-dark = #1e2030;
+tokyo-surface = #2a2e45;
+tokyo-surface-hover = #2f334d;
+tokyo-border = #3b4261;
+tokyo-text = #c8d3f5;
+tokyo-muted = #b4c0e8;
+tokyo-subtle = #828bb8;
+tokyo-accent = #82aaff;
+tokyo-accent-soft = #31406b;
+tokyo-danger = #ff757f;
 
 .translate-icon {
     font-family: 'translateIcon' !important;
@@ -62,10 +82,13 @@ html, body {
     max-width: 440px;
     min-width: 350px;
     overflow: hidden;
+    background-color: lotus-bg;
+    color: lotus-text;
 }
 
 .frame {
     margin: 5%;
+    background-color: lotus-bg;
 }
 
 .row {
@@ -97,16 +120,19 @@ select {
     width: 90%;
     max-width: 150px;
     height: 25px;
-    background-color: #eee;
+    background-color: lotus-surface;
+    color: lotus-text;
+    border: 1px solid lotus-border;
+    border-radius: 6px;
 }
 
 footer {
     font-size: xx-small;
-    color: gray;
+    color: lotus-subtle;
     text-align: center;
 
     a {
-        color: gray;
+        color: lotus-accent;
     }
 }
 
@@ -116,7 +142,7 @@ footer {
 }
 
 .select {
-    background-color: #eee;
+    background-color: lotus-surface;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
@@ -134,9 +160,13 @@ i {
     flex: 1 3 75%;
     height: 20px;
     border: color-primary solid 1px;
+    background-color: lotus-surface;
+    color: lotus-text;
+    border-radius: 8px;
 
     &:focus {
         outline: color-primary solid 1px;
+        box-shadow: 0 0 0 2px rgba(77, 105, 155, 0.14);
     }
 }
 
@@ -144,15 +174,15 @@ i {
     height: 26px;
     flex: 3 1 20%;
     background-color: color-primary;
-    color: white;
+    color: lotus-bg;
     border-style: solid;
     border-color: color-primary;
-    border-radius: 5%;
+    border-radius: 8px;
     margin-left: 5%;
 }
 
 #hint_message {
-    color: red;
+    color: lotus-danger;
     display: none;
 }
 
@@ -160,12 +190,12 @@ i {
     cursor: pointer;
     margin-top: 5%;
     height: 20 px;
-    color: #aaa;
+    color: lotus-subtle;
     justify-content: center;
 }
 
 #setting-switch:hover {
-    color: black;
+    color: lotus-text;
 }
 
 #setting {
@@ -195,55 +225,84 @@ i {
 
 // Dark Mode Styles
 .dark {
-    background-color: #202124 !important;
-    color: #e8eaed !important;
+    background-color: tokyo-bg !important;
+    color: tokyo-text !important;
 }
 
 .dark .frame {
-    background-color: #202124 !important;
+    background-color: tokyo-bg !important;
 }
 
 .dark #translate_input {
-    background-color: #3c4043 !important;
-    color: #e8eaed !important;
-    border-color: #5f6368 !important;
+    background-color: tokyo-surface !important;
+    color: tokyo-text !important;
+    border-color: tokyo-border !important;
 }
 
 .dark #translate_input:focus {
-    outline-color: #8ab4f8 !important;
+    outline-color: tokyo-accent !important;
+    box-shadow: 0 0 0 2px rgba(122, 162, 247, 0.18) !important;
 }
 
 .dark #translateSubmit {
-    background-color: #8ab4f8 !important;
-    border-color: #8ab4f8 !important;
-    color: #202124 !important;
+    background-color: tokyo-accent !important;
+    border-color: tokyo-accent !important;
+    color: tokyo-bg-dark !important;
 }
 
 .dark select {
-    background-color: #3c4043 !important;
-    color: #e8eaed !important;
+    background-color: tokyo-surface !important;
+    color: tokyo-text !important;
+    border-color: tokyo-border !important;
 }
 
 .dark .switch-label {
-    color: #9aa0a6 !important;
+    color: tokyo-muted !important;
 }
 
 .dark #setting-switch {
-    color: #9aa0a6 !important;
+    color: tokyo-subtle !important;
 }
 
 .dark #setting-switch:hover {
-    color: #e8eaed !important;
+    color: tokyo-text !important;
 }
 
 .dark #exchange {
-    color: #8ab4f8 !important;
+    color: tokyo-accent !important;
 }
 
 .dark #page-translate a {
-    color: #8ab4f8 !important;
+    color: tokyo-accent !important;
 }
 
 .dark footer {
-    color: #5f6368 !important;
+    color: tokyo-subtle !important;
+}
+
+.dark #hint_message {
+    color: tokyo-danger !important;
+}
+
+.dark .switch {
+    border-color: tokyo-border !important;
+    background: tokyo-border !important;
+}
+
+.dark .switch:before {
+    background-color: tokyo-border !important;
+}
+
+.dark .switch:after {
+    background-color: tokyo-text !important;
+    box-shadow: none !important;
+}
+
+.dark .switch:checked {
+    border-color: tokyo-accent !important;
+    background-color: tokyo-accent !important;
+}
+
+.dark .switch:checked:before {
+    background-color: tokyo-accent-soft !important;
 }

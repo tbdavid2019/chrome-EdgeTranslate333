@@ -156,7 +156,7 @@
     "description": "關於收集數據的提示"
   },
   "PrivacyPolicyLink": {
-    "message": "https://github.com/tbdavid2019/EdgeTranslate333/blob/master/PRIVACY_POLICY.md",
+    "message": "https://github.com/tbdavid2019/chrome-EdgeTranslate333/blob/master/PRIVACY_POLICY.md",
     "description": "隱私政策鏈接"
   },
   "ExtensionInstalled": {
@@ -164,7 +164,7 @@
     "description": "通知用戶側邊翻譯已安裝。"
   },
   "WikiLink": {
-    "message": "https://github.com/tbdavid2019/EdgeTranslate333/blob/master/README.md",
+    "message": "https://github.com/tbdavid2019/chrome-EdgeTranslate333/blob/master/README.md",
     "description": "Wiki link."
   },
   "ExtensionUpdated": {
@@ -278,6 +278,42 @@
   "DarkMode": {
     "message": "暗黑模式",
     "description": "暗黑模式"
+  },
+  "ThemeMode": {
+    "message": "主題",
+    "description": "Theme selector"
+  },
+  "ThemeModeAuto": {
+    "message": "自動（跟隨系統）",
+    "description": "Automatic theme mode"
+  },
+  "ThemeModeLight": {
+    "message": "淺色",
+    "description": "Light theme mode"
+  },
+  "ThemeModeDark": {
+    "message": "深色",
+    "description": "Dark theme mode"
+  },
+  "ResetTTSAppearanceTitle": {
+    "message": "重設 TTS 與主題偏好",
+    "description": "Reset preference title"
+  },
+  "ResetTTSAppearanceDescription": {
+    "message": "清除已儲存的語音角色與主題覆寫設定，讓舊安裝環境回到自動預設。",
+    "description": "Reset preference description"
+  },
+  "ResetTTSAppearanceButton": {
+    "message": "重設偏好",
+    "description": "Reset preference button"
+  },
+  "ResetTTSAppearanceConfirm": {
+    "message": "現在要重設已儲存的 TTS 語音與主題偏好嗎？",
+    "description": "Reset preference confirmation"
+  },
+  "ResetTTSAppearanceDone": {
+    "message": "已重設 TTS 與主題偏好。",
+    "description": "Reset preference completion message"
   },
   "SelectTranslatePosition": {
     "message": "翻譯按鈕位置",

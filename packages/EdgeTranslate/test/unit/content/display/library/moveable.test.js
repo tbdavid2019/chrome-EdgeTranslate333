@@ -40,4 +40,24 @@ describe("test moveable api in content module", () => {
         let moveable = new Moveable(document.body, {});
         expect(moveable.setThreshold({})).toBeFalsy();
     });
+
+    it("destroys draggable and resizable listeners", () => {
+        document.body.innerHTML = "<div id='target'></div>";
+        const target = document.getElementById("target");
+        const moveable = new Moveable(target, {
+            draggable: true,
+            resizable: true,
+        });
+
+        const draggableDestroy = jest.spyOn(moveable.draggable, "destroy");
+        const resizableDestroy = jest.spyOn(moveable.resizable, "destroy");
+
+        moveable.destroy();
+
+        expect(draggableDestroy).toHaveBeenCalledTimes(1);
+        expect(resizableDestroy).toHaveBeenCalledTimes(1);
+        expect(moveable.draggable).toBeNull();
+        expect(moveable.resizable).toBeNull();
+        expect(moveable.handlers).toEqual({});
+    });
 });

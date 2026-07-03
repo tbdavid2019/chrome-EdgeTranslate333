@@ -105,7 +105,9 @@ const Menu = styled.ul`
     list-style: none;
     font-size: 14px;
     text-align: left;
-    background-color: #fff;
+    background-color: ${(props) => (props.theme?.isDark ? "#2a2e45" : "#f7f3d0")};
+    color: ${(props) => (props.theme?.isDark ? "#c8d3f5" : "#545464")};
+    border: 1px solid ${(props) => (props.theme?.isDark ? "#3b4261" : "#c9c19f")};
     border-radius: 6px;
     padding: 6px 0;
     position: absolute;
@@ -113,7 +115,10 @@ const Menu = styled.ul`
     top: 100%;
     z-index: 6;
     float: left;
-    box-shadow: 0 0 10px rgb(0 0 0 / 6%), 0 4px 4px rgb(0 0 0 / 12%);
+    box-shadow: ${(props) =>
+        props.theme?.isDark
+            ? "0 12px 30px rgba(0, 0, 0, 0.35)"
+            : "0 12px 28px rgba(84, 84, 100, 0.12)"};
 `;
 const Title = styled.a`
     display: flex;
@@ -134,37 +139,39 @@ const Title = styled.a`
     line-height: 1.5;
     border-radius: 6px;
     transition: color 0.2s linear, background-color 0.3s linear;
-    color: gray;
+    color: ${(props) => (props.theme?.isDark ? "#b4c0e8" : "#716e61")};
     background-color: transparent;
     overflow: hidden;
     &:hover {
-        color: #575757;
-        background: #e4e4e4;
+        color: ${(props) => (props.theme?.isDark ? "#c8d3f5" : "#545464")};
+        background: ${(props) => (props.theme?.isDark ? "#2f334d" : "#e9dfb5")};
     }
     &:hover svg {
-        fill: #575757;
+        fill: ${(props) => (props.theme?.isDark ? "#c8d3f5" : "#545464")};
     }
 `;
 const StyledArrowDownIcon = styled(ArrowDownIcon)`
-    fill: #8e8e93;
+    fill: ${(props) => (props.theme?.isDark ? "#828bb8" : "#8a8980")};
     margin-left: 4px;
 `;
 
 /* Style of Item */
 const ActiveStyle = css`
-    color: #1675e0;
+    color: ${(props) => (props.theme?.isDark ? "#82aaff" : "#4d699b")};
     font-weight: 700;
-    background-color: rgba(242, 250, 255, 0.5);
+    background-color: ${(props) =>
+        props.theme?.isDark ? "rgba(130, 170, 255, 0.18)" : "rgba(77, 105, 155, 0.12)"};
     &:hover {
-        color: #1675e0;
-        background-color: rgba(242, 250, 255, 0.5);
+        color: ${(props) => (props.theme?.isDark ? "#82aaff" : "#4d699b")};
+        background-color: ${(props) =>
+            props.theme?.isDark ? "rgba(130, 170, 255, 0.18)" : "rgba(77, 105, 155, 0.12)"};
     }
 `;
 const InActiveStyle = css`
-    color: #575757;
+    color: ${(props) => (props.theme?.isDark ? "#c8d3f5" : "#545464")};
     &:hover {
-        color: #575757;
-        background-color: #f2faff;
+        color: ${(props) => (props.theme?.isDark ? "#c8d3f5" : "#545464")};
+        background-color: ${(props) => (props.theme?.isDark ? "#2f334d" : "#f2ecbc")};
     }
 `;
 const Item = styled.li`

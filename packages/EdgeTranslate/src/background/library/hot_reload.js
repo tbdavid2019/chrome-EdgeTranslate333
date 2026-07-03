@@ -22,11 +22,22 @@ const filesInDirectory = (dir) =>
         dir.createReader().readEntries((entries) =>
             Promise.all(
                 entries
-                    .filter((e) => e.name[0] !== ".")
+                    .filter((e) => {
+                        // Filter out hidden files
+                        if (e.name[0] === ".") return false;
+                        // Exclude directories containing large amounts of static files that don't change (e.g. PDF.js viewer, icons)
+                        if (e.isDirectory && ["web", "google", "icon"].includes(e.name)) return false;
+                        return true;
+                    })
                     .map((e) =>
                         e.isDirectory
                             ? filesInDirectory(e)
-                            : new Promise((resolve) => e.file(resolve))
+                            : new Promise((resolve) => {
+                                  e.getMetadata(
+                                      (metadata) => resolve({ name: e.name, time: metadata.modificationTime ? metadata.modificationTime.getTime() : 0 }),
+                                      () => resolve({ name: e.name, time: 0 })
+                                  );
+                              })
                     )
             )
                 .then((files) => [].concat(...files))
@@ -35,7 +46,7 @@ const filesInDirectory = (dir) =>
     );
 
 const timestampForFilesInDirectory = (dir) =>
-    filesInDirectory(dir).then((files) => files.map((f) => f.name + f.lastModifiedDate).join());
+    filesInDirectory(dir).then((files) => files.map((f) => f.name + f.time).join());
 
 const watchChanges = (dir, lastTimestamp) => {
     timestampForFilesInDirectory(dir).then((timestamp) => {
@@ -46,3 +57,4 @@ const watchChanges = (dir, lastTimestamp) => {
         }
     });
 };
+
