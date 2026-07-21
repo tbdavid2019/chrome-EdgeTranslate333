@@ -233,7 +233,7 @@ function initVoiceSettings(ttsSettings, langSetting) {
   let voices = [];
   let currentLang = "en"; // Default testing lang
   if (langSetting && langSetting.tl) {
-      const base = langSetting.tl.split('-')[0].toLowerCase();
+      const base = langSetting.tl.split("-")[0].toLowerCase();
       if (langCodes.includes(base)) {
           currentLang = base;
       }

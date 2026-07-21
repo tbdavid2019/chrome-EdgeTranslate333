@@ -201,7 +201,7 @@ export default class draggable {
      * remove the dragging event listener
      */
     dragEnd() {
-        this.options.container.addEventListener("mouseup", (e) => {
+        this.dragEndHandler = (e) => {
             if (this.dragging) {
                 this.dragging = false;
                 this.options.container.removeEventListener("mousemove", this.dragHandler);
@@ -211,7 +211,8 @@ export default class draggable {
                         translate: [this.store.currentTranslate[0], this.store.currentTranslate[1]],
                     }); // deep copy
             }
-        });
+        };
+        this.options.container.addEventListener("mouseup", this.dragEndHandler);
     }
 
     /**
@@ -296,5 +297,13 @@ export default class draggable {
                 translate: [translate[0], translate[1]], // deep copy
             });
         return true;
+    }
+
+    destroy() {
+        this.targetElement.removeEventListener("mousedown", this.dragStartHandler);
+        if (this.dragEndHandler) {
+            this.options.container.removeEventListener("mouseup", this.dragEndHandler);
+        }
+        this.options.container.removeEventListener("mousemove", this.dragHandler);
     }
 }

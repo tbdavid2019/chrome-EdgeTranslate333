@@ -12,7 +12,6 @@ import {
 } from "./library/blacklist.js";
 import { initializeBackgroundErrorHandling } from "./library/errorHandling.js";
 import { setupPdfDetection } from "./library/pdfDetection.js";
-import { setupServiceWorkerMocks } from "./library/serviceWorkerMocks.js";
 // Analytics removed
 import { logWarn, logInfo } from "common/scripts/logger.js";
 import { promiseTabs } from "common/scripts/promise.js";
@@ -25,7 +24,6 @@ import {
 } from "common/scripts/settings.js";
 
 initializeBackgroundErrorHandling({ logWarn });
-setupServiceWorkerMocks();
 setupPdfDetection({ logInfo, logWarn });
 
 /**

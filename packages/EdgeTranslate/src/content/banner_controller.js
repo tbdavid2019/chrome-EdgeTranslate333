@@ -4,7 +4,7 @@ import { DEFAULT_SETTINGS, getOrSetDefaultSettings } from "common/scripts/settin
 /**
  * Control the visibility of page translator banners.
  */
-class BannerController {
+export class BannerController {
     constructor() {
         // Communication channel.
         this.channel = new Channel();
@@ -268,6 +268,21 @@ class BannerController {
             childList: true,
             characterData: true,
         });
+    }
+
+    /**
+     * Stop DOM fallback translation observer and clear pending state.
+     */
+    stopDomFallback() {
+        if (this._mo) {
+            this._mo.disconnect();
+            this._mo = null;
+        }
+        if (this._scheduleBatch) {
+            cancelAnimationFrame(this._scheduleBatch);
+            this._scheduleBatch = null;
+        }
+        this._pendingNodes.clear();
     }
 
     /**

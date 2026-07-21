@@ -424,7 +424,7 @@ export default class resizable {
      * remove the resizing event listener
      */
     resizeEnd() {
-        this.options.container.addEventListener("mouseup", (e) => {
+        this.resizeEndHandler = (e) => {
             if (this.resizing) {
                 this.resizing = false;
                 this.options.container.removeEventListener("mousemove", this.resizeHandler);
@@ -437,7 +437,8 @@ export default class resizable {
                         height: this.store.currentSize[1],
                     });
             }
-        });
+        };
+        this.options.container.addEventListener("mouseup", this.resizeEndHandler);
     }
 
     /**
@@ -475,6 +476,19 @@ export default class resizable {
                 target: this.targetElement,
             });
         return true;
+    }
+
+    destroy() {
+        if (this.store.divContainer) {
+            this.store.divContainer.removeEventListener("mousedown", this.resizeStartHandler);
+            if (this.store.divContainer.parentNode) {
+                this.store.divContainer.parentNode.removeChild(this.store.divContainer);
+            }
+        }
+        if (this.resizeEndHandler) {
+            this.options.container.removeEventListener("mouseup", this.resizeEndHandler);
+        }
+        this.options.container.removeEventListener("mousemove", this.resizeHandler);
     }
 }
 

@@ -1,5 +1,21 @@
 # Changelog
 
+## 3.4.3 - 2026-07-06
+
+- Cleaned up legacy and dead code:
+  - Completely removed `serviceWorkerMocks.js` (650+ lines of redundant DOM mock definitions) since the `@edge_translate/translators` package now uses environment-agnostic fetch operations.
+  - Removed duplicate empty rule file `src/rules.json` (active rules are maintained in `static/rules.json`).
+  - Removed loose development script `packages/translators/test-undici.js`.
+  - Removed unused backup CSS file `_viewer.v5.4.54.css`.
+- Reduced extension background service worker bundle size by ~8.2 KiB.
+
+## 3.4.2 - 2026-07-06
+
+- Fixed browser freeze/crash issue triggered by infinite iframe recursion when rendering the translation selection button in pages with iframes.
+- Fixed a memory leak of window/document mouse listeners by implementing `destroy()` cleanup in `Moveable` and calling it when the translation panel is closed.
+- Restored named export of `BannerController` and added `stopDomFallback()` to resolve banner controller tests.
+- Fixed code style quote error in `options.js`.
+
 ## 3.4.1 - 2026-07-03
 
 - Fixed extension process memory leaks and browser crash conditions in development mode by optimizing the hot-reload scanner: replaced resource-heavy `e.file()` API calls with lightweight `e.getMetadata()` and excluded large static folders (`web`, `google`, `icon`) from recursive scanning.

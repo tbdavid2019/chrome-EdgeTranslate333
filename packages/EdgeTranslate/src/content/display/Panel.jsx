@@ -612,6 +612,9 @@ export default function ResultPanel() {
     /* If panel is closed */
     if (!panelEl) {
       // Clear the outdated moveable object.
+      if (moveablePanelRef.current) {
+        moveablePanelRef.current.destroy();
+      }
       moveablePanelRef.current = null;
       setMoveableReady(false);
 

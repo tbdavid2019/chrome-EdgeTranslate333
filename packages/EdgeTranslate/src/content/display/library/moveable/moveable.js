@@ -96,4 +96,17 @@ export default class moveable {
                 return false;
         }
     }
+
+    destroy() {
+        if (this.resizable) {
+            this.resizable.destroy();
+            this.resizable = null;
+        }
+        if (this.draggable) {
+            this.draggable.destroy();
+            this.draggable = null;
+        }
+        this.handlers = {};
+    }
 }
+
