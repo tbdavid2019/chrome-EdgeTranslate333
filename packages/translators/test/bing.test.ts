@@ -3,6 +3,25 @@ import BingTranslator from "../src/translators/bing";
 describe("bing translator api", () => {
     const TRANSLATOR = new BingTranslator();
 
+    it("can initialize without DOMParser in the extension service worker", () => {
+        const originalDOMParser = globalThis.DOMParser;
+        jest.useFakeTimers();
+        try {
+            Object.defineProperty(globalThis, "DOMParser", {
+                configurable: true,
+                value: undefined,
+            });
+            expect(() => new BingTranslator()).not.toThrow();
+        } finally {
+            Object.defineProperty(globalThis, "DOMParser", {
+                configurable: true,
+                value: originalDOMParser,
+            });
+            jest.clearAllTimers();
+            jest.useRealTimers();
+        }
+    });
+
     it("to update IG and IID", async () => {
         await TRANSLATOR.updateTokens();
         expect(typeof TRANSLATOR.IG).toEqual("string");

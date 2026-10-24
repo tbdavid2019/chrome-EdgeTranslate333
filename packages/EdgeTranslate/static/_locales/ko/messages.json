@@ -355,6 +355,18 @@
     "message": "언어 설정 펼치기",
     "description": "언어 설정 펼치기"
   },
+  "VoiceSettings": {
+    "message": "음성 설정",
+    "description": "VoiceSettings"
+  },
+  "SelectLanguage": {
+    "message": "언어 선택",
+    "description": "SelectLanguage"
+  },
+  "SelectVoice": {
+    "message": "음성 선택",
+    "description": "SelectVoice"
+  },
   "HybridTranslatorConfig": {
     "message": "하이브리드 번역기 설정",
     "description": "각 영역 공급자 설정"

@@ -1,5 +1,6 @@
 // EdgeTranslate PDF.js viewer bootstrap (MV3-safe: no inline script)
 import * as PDFJS from '../build/build/pdf.mjs';
+import { normalizeViewerUrl } from './et-viewer-url.js';
 import { applyEarlyThemeFromStorageAndSystem, applyEarlyPageTheme, setupThemeToggle } from './et-viewer-theme.mjs';
 import { setupSecondaryToolbarScroll } from './et-viewer-secondary-toolbar.mjs';
 
@@ -51,61 +52,9 @@ try {
 
   // Apply persisted page theme (auto|light|dark) early to avoid flicker
   applyEarlyPageTheme();
-  const urlObj = new URL(location.href);
-  const params = urlObj.searchParams;
-  const fileParam = params.get('file');
-
-  if (fileParam) {
-    // Decode and normalize target URL
-    let rawUrl = fileParam;
-    try { rawUrl = decodeURIComponent(fileParam); } catch {}
-
-    let target;
-    try { target = new URL(rawUrl, location.href); } catch { target = null; }
-
-    const isBlobUrl = typeof rawUrl === 'string' && rawUrl.startsWith('blob:');
-    const sourceParam = params.get('source');
-
-    // If we're reloading with a blob: URL, rehydrate it from original source when available
-    // Keep track of created blob URLs to revoke later
-    const createdBlobUrls = (window.__etCreatedBlobUrls ||= new Set());
-    window.addEventListener('unload', () => {
-      try {
-        for (const u of createdBlobUrls) {
-          try { URL.revokeObjectURL(u); } catch {}
-        }
-        createdBlobUrls.clear();
-      } catch {}
-    }, { once: true });
-
-    if (isBlobUrl && sourceParam) {
-      try {
-        const original = decodeURIComponent(sourceParam);
-        const res = await fetch(original);
-        const blob = await res.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        try { createdBlobUrls.add(blobUrl); } catch {}
-        params.set('file', blobUrl);
-        history.replaceState(null, '', urlObj.pathname + '?' + params.toString() + urlObj.hash);
-      } catch (e) {
-        console.warn('[EdgeTranslate] PDF blob rehydration failed:', e);
-      }
-    } else if (target && target.origin !== location.origin && !isBlobUrl) {
-      // Cross-origin: preload then point file param at same-origin blob URL before viewer runs
-      try {
-        const res = await fetch(target.href);
-        const blob = await res.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        try { createdBlobUrls.add(blobUrl); } catch {}
-        // Preserve original URL for refresh recovery
-        params.set('source', target.href);
-        params.set('file', blobUrl);
-        history.replaceState(null, '', urlObj.pathname + '?' + params.toString() + urlObj.hash);
-      } catch (e) {
-        console.warn('[EdgeTranslate] PDF preload failed:', e);
-        // keep original param; viewer will likely fail, but we proceed
-      }
-    }
+  const normalized = normalizeViewerUrl(location.href);
+  if (normalized.recoveredLegacyBlob) {
+    history.replaceState(null, '', normalized.href);
   }
 
   // Load official viewer once URL is finalized (avoid duplicate insert)

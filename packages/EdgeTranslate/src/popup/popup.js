@@ -31,6 +31,7 @@ let darkModeToggle = document.getElementById("dark-mode");
  */
 window.onload = function () {
   i18nHTML();
+  document.documentElement.lang = chrome.i18n.getUILanguage();
   const matchMediaFn =
     typeof window !== "undefined" && typeof window.matchMedia === "function"
       ? window.matchMedia.bind(window)
@@ -59,10 +60,9 @@ window.onload = function () {
     pageTranslateRow.parentNode.removeChild(pageTranslateRow);
   }
 
-  let arrowUp = document.getElementById("arrow-up");
-  let arrowDown = document.getElementById("arrow-down");
-  arrowDown.setAttribute("title", chrome.i18n.getMessage("Unfold"));
-  arrowUp.setAttribute("title", chrome.i18n.getMessage("Fold"));
+  document.getElementById("setting-switch").setAttribute("title", chrome.i18n.getMessage("ChangeLanguageSetting"));
+  document.getElementById("exchange").setAttribute("aria-label", chrome.i18n.getMessage("ExchangeSourceAndTargetLanguage"));
+  document.getElementById("setting-switch").setAttribute("aria-label", chrome.i18n.getMessage("ChangeLanguageSetting"));
 
   sourceLanguage.onchange = function () {
     // 如果源语言是自动判断语言类型(值是auto),则按钮显示灰色，避免用户点击,如果不是，则显示蓝色，可以点击
@@ -149,6 +149,7 @@ window.onload = function () {
       }
     }
 
+    judgeValue(exchangeButton, sourceLanguage);
     showSourceTarget(); // show source language and target language in input placeholder
   });
 
@@ -231,9 +232,8 @@ function saveOption(key, value) {
  */
 function addEventListener() {
   document
-    .getElementById("translateSubmit")
-    .addEventListener("click", translateSubmit);
-  document.addEventListener("keypress", translatePreSubmit); // 对用户按下回车按键后的事件进行监听
+    .getElementById("translate-form")
+    .addEventListener("submit", translateSubmit);
   document
     .getElementById("setting-switch")
     .addEventListener("click", settingSwitch);
@@ -248,7 +248,8 @@ function addEventListener() {
 /**
  * 负责在option页面中输入内容后进行翻译
  */
-function translateSubmit() {
+function translateSubmit(event) {
+  event.preventDefault();
   let content = document.getElementById("translate_input").value;
   if (content.replace(/\s*/, "") !== "") {
     // 判断值是否为
@@ -272,8 +273,7 @@ function translateSubmit() {
  * @param {*HTMLElement} sourceLanguage 特定的一个element,源语言的选项
  */
 function judgeValue(exchangeButton, sourceLanguage) {
-  if (sourceLanguage.value === "auto") exchangeButton.style.color = "gray";
-  else exchangeButton.style.color = "#4a8cf7";
+  exchangeButton.disabled = sourceLanguage.value === "auto";
 }
 
 /**
@@ -294,31 +294,19 @@ function exchangeLanguage() {
  */
 function settingSwitch() {
   let setting = document.getElementById("setting");
-  let arrowUp = document.getElementById("arrow-up");
-  let arrowDown = document.getElementById("arrow-down");
-  if (!setting.style.display || setting.style.display == "none") {
+  const isExpanded = document.getElementById("setting-switch").getAttribute("aria-expanded") === "true";
+  if (!isExpanded) {
     setting.style.display = "block";
-    arrowDown.style.display = "none";
-    arrowUp.style.display = "inline";
+    document.getElementById("setting-switch").setAttribute("aria-expanded", "true");
     document.getElementById("tl").focus(); // after show settings block, the language element <select> will be auto focused
     judgeValue(exchangeButton, sourceLanguage);
   } else {
     setting.style.display = "none";
-    arrowDown.style.display = "inline";
-    arrowUp.style.display = "none";
+    document.getElementById("setting-switch").setAttribute("aria-expanded", "false");
     document.getElementById("translate_input").focus(); // after settings block disappear, the translation element <input> will be auto focused
   }
 }
 
-/**
- * 判断如果按下的是按钮是enter键，就调用翻译的函数
- */
-function translatePreSubmit(event) {
-  let int_keycode = event.charCode || event.keyCode;
-  if (int_keycode == "13") {
-    translateSubmit();
-  }
-}
 
 /**
  * show source language and target language hint in placeholder of input element

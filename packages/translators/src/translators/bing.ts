@@ -69,8 +69,6 @@ class BingTranslator {
      */
     REQUEST_DELAY = 50;
 
-    HTMLParser = new DOMParser();
-
     /**
      * Max retry times.
      */
@@ -277,10 +275,8 @@ class BingTranslator {
      */
     CODE_TO_LAN = new Map(this.LANGUAGES.map(([lan, code]) => [code, lan]));
 
-    /**
-     * Audio instance.
-     */
-    AUDIO = new Audio();
+    /** Created lazily because MV3 service workers do not expose Audio. */
+    private audio: HTMLAudioElement | null = null;
 
     /**
      * Get IG and IID for urls.
@@ -1197,8 +1193,9 @@ class BingTranslator {
                     [text, actualLanguage, speed],
                     false
                 );
-                this.AUDIO.src = `data:audio/mp3;base64,${this.arrayBufferToBase64(TTSResponse)}`;
-                await this.AUDIO.play();
+                const audio = this.getAudioElement();
+                audio.src = `data:audio/mp3;base64,${this.arrayBufferToBase64(TTSResponse)}`;
+                await audio.play();
             } catch (error: any) {
                 if (retryCount < this.MAX_RETRY) {
                     retryCount++;
@@ -1237,9 +1234,19 @@ class BingTranslator {
      * Pause pronounce.
      */
     stopPronounce() {
-        if (!this.AUDIO.paused) {
-            this.AUDIO.pause();
+        if (this.audio && !this.audio.paused) {
+            this.audio.pause();
         }
+    }
+
+    private getAudioElement(): HTMLAudioElement {
+        if (!this.audio) {
+            if (typeof Audio === "undefined") {
+                throw new Error("Audio playback is unavailable in this context.");
+            }
+            this.audio = new Audio();
+        }
+        return this.audio;
     }
 
     /**

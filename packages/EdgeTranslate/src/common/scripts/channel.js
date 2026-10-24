@@ -1,5 +1,27 @@
 import EventManager from "./event.js";
 
+const CHANNEL_ERROR_MARKER = "__edgeTranslateChannelServiceError__";
+
+function serializeServiceError(error) {
+    const message = typeof error?.message === "string" && error.message
+        ? error.message
+        : String(error || "Service failed without an error message");
+    return {
+        [CHANNEL_ERROR_MARKER]: true,
+        name: typeof error?.name === "string" && error.name ? error.name : "Error",
+        message,
+    };
+}
+
+function unwrapServiceResult(result) {
+    if (result && result[CHANNEL_ERROR_MARKER] === true) {
+        const error = new Error(result.message || "Service request failed");
+        error.name = result.name || "Error";
+        throw error;
+    }
+    return result;
+}
+
 /**
  * Channel for inter-context communication.
  *
@@ -57,9 +79,12 @@ class Channel {
                         if (!server) break;
 
                         // We can call the callback only when we really provide the requested service.
-                        server(parsed.params, sender).then(
-                            (result) => callback && callback(result)
-                        );
+                        Promise.resolve()
+                            .then(() => server(parsed.params, sender))
+                            .then(
+                                (result) => callback && callback(result),
+                                (error) => callback && callback(serializeServiceError(error)),
+                            );
                         return true;
                     }
                     default:
@@ -96,7 +121,11 @@ class Channel {
                 if (chrome.runtime.lastError) {
                     reject(chrome.runtime.lastError);
                 } else {
-                    resolve(result);
+                    try {
+                        resolve(unwrapServiceResult(result));
+                    } catch (error) {
+                        reject(error);
+                    }
                 }
             });
         });
@@ -117,7 +146,9 @@ class Channel {
         }
 
         const message = JSON.stringify({ type: "service", service, params });
-        return send(tabId, message);
+        return Promise.resolve()
+            .then(() => send(tabId, message))
+            .then(unwrapServiceResult);
     }
 
     /**

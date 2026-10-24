@@ -154,10 +154,8 @@ class GoogleTranslator {
      */
     CODE_TO_LAN = new Map(LANGUAGES.map(([lan, code]) => [code, lan]));
 
-    /**
-     * Audio instance.
-     */
-    AUDIO = new Audio();
+    /** Created lazily because MV3 service workers do not expose Audio. */
+    private audio: HTMLAudioElement | null = null;
 
     // Lightweight cache for translate/detect results (short TTL as backend may vary)
     private cache = new LRUCache<string, any>({ max: 200, ttl: 2 * 60 * 1000 });
@@ -628,14 +626,14 @@ class GoogleTranslator {
         this.stopPronounce();
         let speedValue = speed === "fast" ? "0.8" : "0.2";
 
-        this.AUDIO.src = `${
-            this.fallBacking ? this.FALLBACK_TTS_URL : this.TTS_URL
-        }&q=${encodeURIComponent(text)}&tl=${this.LAN_TO_CODE.get(
-            language
-        )}&ttsspeed=${speedValue}&tk=${this.generateTK(text, this.TKK[0], this.TKK[1])}`;
-
         try {
-            await this.AUDIO.play();
+            const audio = this.getAudioElement();
+            audio.src = `${
+                this.fallBacking ? this.FALLBACK_TTS_URL : this.TTS_URL
+            }&q=${encodeURIComponent(text)}&tl=${this.LAN_TO_CODE.get(
+                language
+            )}&ttsspeed=${speedValue}&tk=${this.generateTK(text, this.TKK[0], this.TKK[1])}`;
+            await audio.play();
         } catch (error: any) {
             // TODO: handle API_ERR and NET_ERR differently.
             throw {
@@ -657,9 +655,19 @@ class GoogleTranslator {
      * Stop pronouncing.
      */
     stopPronounce() {
-        if (!this.AUDIO.paused) {
-            this.AUDIO.pause();
+        if (this.audio && !this.audio.paused) {
+            this.audio.pause();
         }
+    }
+
+    private getAudioElement(): HTMLAudioElement {
+        if (!this.audio) {
+            if (typeof Audio === "undefined") {
+                throw new Error("Audio playback is unavailable in this context.");
+            }
+            this.audio = new Audio();
+        }
+        return this.audio;
     }
 }
 

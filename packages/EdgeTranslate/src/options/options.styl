@@ -1,212 +1,77 @@
 @import '../common/style/input.styl';
 
-lotus-bg = #f2ecbc;
-lotus-surface = #f7f3d0;
-lotus-surface-alt = #e9dfb5;
-lotus-border = #c9c19f;
-lotus-text = #545464;
-lotus-muted = #716e61;
-lotus-subtle = #8a8980;
-lotus-accent = #4d699b;
-
-tokyo-bg = #222436;
-tokyo-surface = #2a2e45;
-tokyo-border = #3b4261;
-tokyo-text = #c8d3f5;
-tokyo-muted = #b4c0e8;
-tokyo-subtle = #828bb8;
-tokyo-accent = #82aaff;
+canvas = #fff0cc;
+surface = #fff9e8;
+ink = #2b251a;
+muted = #655a43;
+border = #6b5b38;
+accent = #a9471d;
+saffron = #ffb010;
+night = #0b1a29;
+navy = #17324d;
+dark-muted = #d6bc7c;
 
 html, body {
-    width: 100%;
-    padding: 0;
     margin: 0;
-    background-color: lotus-bg;
-    color: lotus-text;
-    // 시스템 기본 폰트 스택 적용
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    font-variant-ligatures: none;
-    font-weight: 500;
+    min-height: 100%;
+    background: canvas;
+    color: ink;
+    font: 400 16px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
 }
-
 #option {
-    padding: 0 10%;
-    margin: auto;
-    max-width: 840px;
-    margin: 0px auto;
-    box-shadow: 0px 18px 44px rgba(84, 84, 100, 0.12);
-    background-color: lotus-surface;
-    border: 1px solid rgba(201, 193, 159, 0.75);
-}
-
-header {
+    box-sizing: border-box;
     width: 100%;
-    height: 25%;
-    padding: 5% 0;
-    font-size: 64px;
-    font-weight: bold;
-    color: lotus-accent;
-    display: flex;
-    align-items: center;
+    max-width: 920px;
+    margin: 24px auto;
+    padding: 24px 6%;
+    border: 1px solid border;
+    border-radius: 16px;
+    background: surface;
+    box-shadow: 0 12px 32px rgba(43, 37, 26, .12);
 }
+header { display: flex; align-items: center; gap: 12px; margin: 0 0 28px; color: accent; }
+header img { width: 48px; height: 48px; object-fit: contain; }
+header h1 { margin: 0; font-size: 24px; line-height: 1.25; font-weight: 700; }
+.content { min-width: 0; }
+.setting-title { margin: 28px 0 8px; font-size: 18px; line-height: 1.4; font-weight: 700; color: ink; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin: 10px 0; }
+.column { display: flex; align-items: center; gap: 8px; flex: 1 1 0; min-width: 0; }
+.reset-column { width: 100%; align-items: center; gap: 16px; }
+.reset-copy { flex: 1 1 auto; line-height: 1.5; }
+.reset-title { font-weight: 600; }
+.reset-description { margin-top: 4px; color: muted; font-size: 14px; }
+.checked-label, .radio-label { cursor: pointer; font-size: 16px; }
+.checked-label { display: inline-flex; align-items: center; gap: 10px; }
+.setting-title + .row, .setting-title + div { margin-top: 0; }
+select, button { min-height: 42px; max-width: 100%; border: 1px solid border; border-radius: 8px; padding: 8px 12px; background: #fffefa; color: ink; font: inherit; }
+select { min-width: 150px; }
+button { background: saffron; border-color: navy; font-weight: 700; cursor: pointer; }
+button:hover { filter: brightness(.95); }
+.secondary-button { flex: 0 0 auto; background: surface; border-color: border; color: ink; font-size: 14px; }
+.space { display: inline-block; width: 4px; }
+:focus-visible { outline: 3px solid accent; outline-offset: 2px; }
+footer { padding: 28px 0 8px; text-align: center; font-size: 14px; color: muted; overflow-wrap: anywhere; }
+a { color: #71300f; }
 
-.row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    line-height: 4em;
-    margin: 3% 5%;
-    flex: 1 1;
-}
+.dark, .dark body { background: night !important; color: #fff9e8 !important; }
+.dark #option { background: navy !important; border-color: dark-muted; color: #fff9e8 !important; }
+.dark header, .dark .setting-title { color: #fff9e8; }
+.dark .checked-label, .dark .radio-label, .dark footer, .dark .reset-description { color: dark-muted; }
+.dark select { background: night; color: #fff9e8; border-color: dark-muted; }
+.dark button { background: saffron; border-color: navy; color: ink; }
+.dark .secondary-button { background: navy; color: #fff9e8; border-color: dark-muted; }
+.dark a, .dark footer a { color: saffron; }
+.dark .radio, .dark .checkbox { background-color: #fffefa; border-color: dark-muted; }
+.dark .radio:checked, .dark .checkbox:checked { accent-color: saffron; }
+.dark .switch { background: #655a43; border-color: dark-muted; }
+.dark .switch:checked { background: saffron; border-color: saffron; }
+.dark :focus-visible { outline-color: saffron; }
 
-.column {
-    display: flex;
-    align-items: center;
-    min-width: 30%;
-    max-width: 70%;
-}
-
-.reset-column {
-    max-width: 100%;
-    width: 100%;
-    align-items: flex-start;
-    gap: 16px;
-}
-
-.reset-copy {
-    flex: 1 1 auto;
-    line-height: 1.5;
-}
-
-.reset-title {
-    font-size: medium;
-    font-weight: 600;
-}
-
-.reset-description {
-    margin-top: 6px;
-    font-size: 14px;
-    color: lotus-muted;
-}
-
-.secondary-button {
-    border: 1px solid lotus-border;
-    background: lotus-surface-alt;
-    color: lotus-accent;
-    border-radius: 8px;
-    padding: 10px 16px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.secondary-button:hover {
-    background: lotus-bg;
-}
-
-.checked-label {
-    cursor: pointer;
-    font-size: medium;
-    flex: 3 3 50%;
-    justify-content: space-between;
-}
-
-.radio-label {
-    cursor: pointer;
-    font-size: medium;
-}
-
-.setting-title {
-    font-size: large;
-    font-weight: bold;
-}
-
-.space {
-    display: inline-block;
-    width: 5px;
-}
-
-footer {
-    padding: 5% 0;
-    text-align: center;
-    font-size: medium;
-    color: lotus-subtle;
-}
-
-// Dark Mode Styles
-.dark {
-    background-color: tokyo-bg !important;
-    color: tokyo-text !important;
-}
-
-.dark #option {
-    background-color: tokyo-surface !important;
-    box-shadow: 0px 0px 50px rgba(0, 0, 0, 0.5) !important;
-    color: tokyo-text !important;
-    border-color: tokyo-border !important;
-}
-
-.dark header {
-    color: tokyo-accent !important;
-}
-
-.dark .setting-title {
-    color: tokyo-text !important;
-}
-
-.dark .checked-label, 
-.dark .radio-label, 
-.dark footer {
-    color: tokyo-muted !important;
-}
-
-.dark .reset-description {
-    color: tokyo-muted !important;
-}
-
-.dark footer a {
-    color: tokyo-accent !important;
-}
-
-.dark select {
-    background-color: tokyo-surface !important;
-    color: tokyo-text !important;
-    border: 1px solid tokyo-border !important;
-}
-
-.dark .secondary-button {
-    background-color: tokyo-surface !important;
-    border-color: tokyo-border !important;
-    color: tokyo-accent !important;
-}
-
-.dark .secondary-button:hover {
-    background-color: #303654 !important;
-}
-
-.dark .checkbox,
-.dark .radio {
-    background-color: tokyo-surface !important;
-    border-color: tokyo-border !important;
-}
-
-.dark .switch {
-    border-color: tokyo-border !important;
-    background: tokyo-border !important;
-}
-
-.dark .switch:before {
-    background-color: tokyo-border !important;
-}
-
-.dark .switch:after {
-    background-color: tokyo-text !important;
-    box-shadow: none !important;
-}
-
-.dark .switch:checked {
-    border-color: tokyo-accent !important;
-    background-color: tokyo-accent !important;
+@media (max-width: 600px) {
+    #option { margin: 0 auto; padding: 16px; border-radius: 0; }
+    .row { align-items: flex-start; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+    .column { flex: 1 1 100%; max-width: 100%; }
+    .reset-column { flex-direction: column; align-items: stretch; }
+    .reset-column button { align-self: flex-start; }
+    select { min-width: 0; width: 100%; }
 }

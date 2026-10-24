@@ -355,6 +355,18 @@
     "message": "展开语言设置",
     "description": "将语言设置选项展开"
   },
+  "VoiceSettings": {
+    "message": "语音设置",
+    "description": "VoiceSettings"
+  },
+  "SelectLanguage": {
+    "message": "选择语言",
+    "description": "SelectLanguage"
+  },
+  "SelectVoice": {
+    "message": "选择语音",
+    "description": "SelectVoice"
+  },
   "HybridTranslatorConfig": {
     "message": "混合翻译源设置",
     "description": "设置翻译结果各个部分使用的翻译源。"

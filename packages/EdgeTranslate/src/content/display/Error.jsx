@@ -3,7 +3,8 @@ import { h } from "preact";
 import styled from "styled-components";
 import { useEffect, useRef } from "preact/hooks";
 import { ContentWrapperCenterClassName } from "./Panel.jsx";
-import ErrorIcon from "./icons/error.svg";
+import { CircleAlert as ErrorIcon } from "lucide-preact";
+import { translationColors as colors } from "common/scripts/uiTheme.js";
 
 /**
  * @param {{
@@ -30,7 +31,7 @@ export default function Error(props) {
         };
     }, []);
     return (
-        <ErrorContainer ref={errorElRef}>
+        <ErrorContainer ref={errorElRef} role="alert" aria-live="assertive">
             <ErrorInfo>
                 <StyledErrorIcon />
                 <ErrorType>
@@ -85,16 +86,21 @@ const StyledErrorIcon = styled(ErrorIcon)`
     height: 150px;
     display: block;
     align-self: center;
-    fill: #dd5145;
+    color: ${colors.clay};
 
     :hover {
-        fill: #dd5145;
+        color: ${colors.clay};
     }
 `;
 
 const ErrorType = styled.p`
     font-weight: bold;
-    font-size: large;
+    font-size: 24px;
+    color: ${(props) => props.theme?.isDark ? colors.darkText : colors.ink};
 `;
 
-const ErrorMessage = styled.p``;
+const ErrorMessage = styled.p`
+    font-size: 16px;
+    line-height: 1.6;
+    color: ${(props) => props.theme?.isDark ? colors.darkMuted : colors.muted};
+`;

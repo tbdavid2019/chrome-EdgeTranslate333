@@ -5,12 +5,12 @@
 */
 
 :root {
-  --et-accent: #4f8cff;
-  --et-bg: #101317;
-  --et-elev: #171b21;
-  --et-text: #e6ebf1;
-  --et-muted: #9aa6b2;
-  --et-border: #2a2f37;
+  --et-accent: #e0a52b;
+  --et-bg: #122b43;
+  --et-elev: #193751;
+  --et-text: #f5f0e4;
+  --et-muted: #c2cdd2;
+  --et-border: #36536a;
   --et-radius: 10px;
   /* Aesthetic tweaks: One UI-like taller toolbar and larger icons */
   --toolbar-height: 44px;
@@ -24,17 +24,41 @@
 
 @media (prefers-color-scheme: light) {
   :root {
-    --et-bg: #f6f8fb;
-    --et-elev: #ffffff;
-    --et-text: #1a1f24;
-    --et-muted: #5b6672;
-    --et-border: #e6e9ef;
+    --et-bg: #f7f2e8;
+    --et-elev: #fffdf7;
+    --et-text: #18324a;
+    --et-muted: #52697a;
+    --et-border: #ded5c3;
   }
 }
 
 html, body {
   background: var(--et-bg) !important;
   color: var(--et-text) !important;
+}
+
+/* Typography applies to viewer controls and chrome, never PDF page layers. */
+#toolbarContainer,
+#toolbarContainer button,
+#toolbarContainer input,
+#toolbarContainer select,
+#toolbarContainer textarea,
+#secondaryToolbar,
+#secondaryToolbar button,
+#findbar,
+#findbar button,
+#findbar input,
+#editorUndoBar,
+#dialogContainer dialog,
+.doorHanger,
+.treeItem {
+  font-size: 14px;
+}
+
+#toolbarContainer .toolbarButton,
+#toolbarContainer .toolbarField,
+#toolbarContainer .toolbarLabel {
+  font-size: 16px;
 }
 
 /* Page inversion (PDF content only, toolbar 제외) */
@@ -54,7 +78,7 @@ html[data-page-theme="dark"] .annotationLayer svg {
 
 /* Improve text selection/readability under inversion */
 html[data-page-theme="dark"] #viewer .textLayer span::selection {
-  background: rgba(79, 140, 255, 0.35) !important;
+  background: rgba(224, 165, 43, 0.38) !important;
 }
 
 #outerContainer .toolbar,
@@ -90,7 +114,7 @@ html[data-page-theme="dark"] #viewer .textLayer span::selection {
 .primaryButton {
   background: var(--et-accent);
   border-color: var(--et-accent);
-  color: white;
+  color: #18324a;
 }
 
 .toolbarField, input[type="number"], input[type="text"], textarea, select {
@@ -110,11 +134,11 @@ html[data-page-theme="dark"] #viewer .textLayer span::selection {
 }
 
 .progress .glimmer {
-  background: linear-gradient(90deg, transparent, rgba(79,140,255,0.35), transparent) !important;
+  background: linear-gradient(90deg, transparent, rgba(224,165,43,0.35), transparent) !important;
 }
 
 #viewer .textLayer span::selection {
-  background: rgba(79,140,255,0.35) !important;
+  background: rgba(224,165,43,0.38) !important;
 }
 
 /* 스크롤바 */
@@ -124,11 +148,11 @@ html[data-page-theme="dark"] #viewer .textLayer span::selection {
 
 /* Explicit theme overrides via attribute */
 html[data-theme="dark"] {
-  --et-bg: #101317;
-  --et-elev: #171b21;
-  --et-text: #e6ebf1;
-  --et-muted: #9aa6b2;
-  --et-border: #2a2f37;
+  --et-bg: #122b43;
+  --et-elev: #193751;
+  --et-text: #f5f0e4;
+  --et-muted: #c2cdd2;
+  --et-border: #36536a;
 
   /* Bridge PDF.js variables to our palette */
   --toolbar-bg-color: var(--et-elev);
@@ -136,7 +160,7 @@ html[data-theme="dark"] {
   --doorhanger-separator-color: var(--et-border);
   --menu-bg-color: var(--et-elev);
   --menuitem-fg-color: var(--et-text);
-  --menuitem-hover-bg-color: rgba(79, 140, 255, 0.15);
+  --menuitem-hover-bg-color: rgba(224, 165, 43, 0.18);
   --menu-button-border-color: var(--et-border);
   --menu-button-focus-outline-color: var(--et-accent);
   --separator-color: var(--et-border);
@@ -145,11 +169,11 @@ html[data-theme="dark"] {
 }
 
 html[data-theme="light"] {
-  --et-bg: #f6f8fb;
-  --et-elev: #ffffff;
-  --et-text: #1a1f24;
-  --et-muted: #5b6672;
-  --et-border: #e6e9ef;
+  --et-bg: #f7f2e8;
+  --et-elev: #fffdf7;
+  --et-text: #18324a;
+  --et-muted: #52697a;
+  --et-border: #ded5c3;
 
   /* Bridge PDF.js variables to our palette */
   --toolbar-bg-color: var(--et-elev);
@@ -157,7 +181,7 @@ html[data-theme="light"] {
   --doorhanger-separator-color: var(--et-border);
   --menu-bg-color: var(--et-elev);
   --menuitem-fg-color: var(--et-text);
-  --menuitem-hover-bg-color: rgba(79, 140, 255, 0.08);
+  --menuitem-hover-bg-color: rgba(224, 165, 43, 0.16);
   --menu-button-border-color: var(--et-border);
   --menu-button-focus-outline-color: var(--et-accent);
   --separator-color: var(--et-border);

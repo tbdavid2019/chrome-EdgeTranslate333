@@ -51,7 +51,7 @@ class DeepLTranslator {
     CODE_TO_LAN = new Map(LANGUAGES.map(([lan, code]) => [code, lan]));
     langDetector: any;
     TTSEngine: any;
-    deepLIframe!: HTMLIFrameElement;
+    deepLIframe: HTMLIFrameElement | null = null;
 
     constructor(langDetector: any, TTSEngine: any) {
         /**
@@ -59,16 +59,20 @@ class DeepLTranslator {
          */
         this.langDetector = langDetector;
         this.TTSEngine = TTSEngine;
-        this.createIframe();
     }
 
     /**
      * Create the iframe.
      */
-    private createIframe() {
+    private createIframe(): HTMLIFrameElement {
+        if (typeof document === "undefined" || typeof window === "undefined" || !document.body) {
+            throw new Error("DeepL iframe translation requires a document context.");
+        }
+        if (this.deepLIframe) return this.deepLIframe;
         this.deepLIframe = document.createElement("iframe");
         document.body.appendChild(this.deepLIframe);
         this.deepLIframe.src = this.HOME_PAGE;
+        return this.deepLIframe;
     }
 
     /**
@@ -102,6 +106,7 @@ class DeepLTranslator {
      */
     async translate(text: string, from: string, to: string) {
         try {
+            const iframe = this.createIframe();
             const result = await new Promise<string>((resolve, reject) => {
                 /**
                  * Prevent infinitely waiting for the result.
@@ -127,7 +132,7 @@ class DeepLTranslator {
                 /**
                  * Request the iframe to start translating.
                  */
-                this.deepLIframe.contentWindow!.postMessage(
+                iframe.contentWindow!.postMessage(
                     {
                         type: "edge_translate_deepl_request",
                         url: `${this.HOME_PAGE}#${this.LAN_TO_CODE.get(
@@ -146,7 +151,10 @@ class DeepLTranslator {
              * Status 408 means we can not communicate with the iframe. Thus we have to recreate it.
              */
             if (error.status === 408) {
-                document.body.removeChild(this.deepLIframe);
+                if (this.deepLIframe?.parentNode) {
+                    this.deepLIframe.parentNode.removeChild(this.deepLIframe);
+                }
+                this.deepLIframe = null;
                 this.createIframe();
             }
 

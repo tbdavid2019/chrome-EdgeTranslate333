@@ -96,54 +96,54 @@
     rgb(115 115 115)
   );
 
-  --loading-icon: url(images/loading.svg);
-  --treeitem-expanded-icon: url(images/treeitem-expanded.svg);
-  --treeitem-collapsed-icon: url(images/treeitem-collapsed.svg);
-  --toolbarButton-editorFreeText-icon: url(images/toolbarButton-editorFreeText.svg);
-  --toolbarButton-editorHighlight-icon: url(images/toolbarButton-editorHighlight.svg);
-  --toolbarButton-editorInk-icon: url(images/toolbarButton-editorInk.svg);
-  --toolbarButton-editorStamp-icon: url(images/toolbarButton-editorStamp.svg);
-  --toolbarButton-editorSignature-icon: url(images/toolbarButton-editorSignature.svg);
-  --toolbarButton-menuArrow-icon: url(images/toolbarButton-menuArrow.svg);
-  --toolbarButton-sidebarToggle-icon: url(images/toolbarButton-sidebarToggle.svg);
-  --toolbarButton-secondaryToolbarToggle-icon: url(images/toolbarButton-secondaryToolbarToggle.svg);
-  --toolbarButton-pageUp-icon: url(images/toolbarButton-pageUp.svg);
-  --toolbarButton-pageDown-icon: url(images/toolbarButton-pageDown.svg);
-  --toolbarButton-zoomOut-icon: url(images/toolbarButton-zoomOut.svg);
-  --toolbarButton-zoomIn-icon: url(images/toolbarButton-zoomIn.svg);
-  --toolbarButton-presentationMode-icon: url(images/toolbarButton-presentationMode.svg);
-  --toolbarButton-print-icon: url(images/toolbarButton-print.svg);
+  --loading-icon: url(images/lucide/loader-circle.svg);
+  --treeitem-expanded-icon: url(images/lucide/chevron-down.svg);
+  --treeitem-collapsed-icon: url(images/lucide/chevron-right.svg);
+  --toolbarButton-editorFreeText-icon: url(images/lucide/type.svg);
+  --toolbarButton-editorHighlight-icon: url(images/lucide/highlighter.svg);
+  --toolbarButton-editorInk-icon: url(images/lucide/pen-line.svg);
+  --toolbarButton-editorStamp-icon: url(images/lucide/stamp.svg);
+  --toolbarButton-editorSignature-icon: url(images/lucide/pen-tool.svg);
+  --toolbarButton-menuArrow-icon: url(images/lucide/chevron-down.svg);
+  --toolbarButton-sidebarToggle-icon: url(images/lucide/panel-left.svg);
+  --toolbarButton-secondaryToolbarToggle-icon: url(images/lucide/ellipsis.svg);
+  --toolbarButton-pageUp-icon: url(images/lucide/chevron-up.svg);
+  --toolbarButton-pageDown-icon: url(images/lucide/chevron-down.svg);
+  --toolbarButton-zoomOut-icon: url(images/lucide/zoom-out.svg);
+  --toolbarButton-zoomIn-icon: url(images/lucide/zoom-in.svg);
+  --toolbarButton-presentationMode-icon: url(images/lucide/presentation.svg);
+  --toolbarButton-print-icon: url(images/lucide/printer.svg);
   /*#if GENERIC*/
-  --toolbarButton-openFile-icon: url(images/toolbarButton-openFile.svg);
+  --toolbarButton-openFile-icon: url(images/lucide/folder-open.svg);
   /*#endif*/
-  --toolbarButton-download-icon: url(images/toolbarButton-download.svg);
-  --toolbarButton-bookmark-icon: url(images/toolbarButton-bookmark.svg);
-  --toolbarButton-viewThumbnail-icon: url(images/toolbarButton-viewThumbnail.svg);
-  --toolbarButton-viewOutline-icon: url(images/toolbarButton-viewOutline.svg);
-  --toolbarButton-viewAttachments-icon: url(images/toolbarButton-viewAttachments.svg);
-  --toolbarButton-viewLayers-icon: url(images/toolbarButton-viewLayers.svg);
-  --toolbarButton-currentOutlineItem-icon: url(images/toolbarButton-currentOutlineItem.svg);
-  --toolbarButton-search-icon: url(images/toolbarButton-search.svg);
-  --findbarButton-previous-icon: url(images/findbarButton-previous.svg);
-  --findbarButton-next-icon: url(images/findbarButton-next.svg);
-  --secondaryToolbarButton-firstPage-icon: url(images/secondaryToolbarButton-firstPage.svg);
-  --secondaryToolbarButton-lastPage-icon: url(images/secondaryToolbarButton-lastPage.svg);
-  --secondaryToolbarButton-rotateCcw-icon: url(images/secondaryToolbarButton-rotateCcw.svg);
-  --secondaryToolbarButton-rotateCw-icon: url(images/secondaryToolbarButton-rotateCw.svg);
-  --secondaryToolbarButton-selectTool-icon: url(images/secondaryToolbarButton-selectTool.svg);
-  --secondaryToolbarButton-handTool-icon: url(images/secondaryToolbarButton-handTool.svg);
-  --secondaryToolbarButton-scrollPage-icon: url(images/secondaryToolbarButton-scrollPage.svg);
-  --secondaryToolbarButton-scrollVertical-icon: url(images/secondaryToolbarButton-scrollVertical.svg);
-  --secondaryToolbarButton-scrollHorizontal-icon: url(images/secondaryToolbarButton-scrollHorizontal.svg);
-  --secondaryToolbarButton-scrollWrapped-icon: url(images/secondaryToolbarButton-scrollWrapped.svg);
-  --secondaryToolbarButton-spreadNone-icon: url(images/secondaryToolbarButton-spreadNone.svg);
-  --secondaryToolbarButton-spreadOdd-icon: url(images/secondaryToolbarButton-spreadOdd.svg);
-  --secondaryToolbarButton-spreadEven-icon: url(images/secondaryToolbarButton-spreadEven.svg);
+  --toolbarButton-download-icon: url(images/lucide/download.svg);
+  --toolbarButton-bookmark-icon: url(images/lucide/bookmark.svg);
+  --toolbarButton-viewThumbnail-icon: url(images/lucide/image.svg);
+  --toolbarButton-viewOutline-icon: url(images/lucide/list-tree.svg);
+  --toolbarButton-viewAttachments-icon: url(images/lucide/paperclip.svg);
+  --toolbarButton-viewLayers-icon: url(images/lucide/layers.svg);
+  --toolbarButton-currentOutlineItem-icon: url(images/lucide/locate-fixed.svg);
+  --toolbarButton-search-icon: url(images/lucide/search.svg);
+  --findbarButton-previous-icon: url(images/lucide/chevron-up.svg);
+  --findbarButton-next-icon: url(images/lucide/chevron-down.svg);
+  --secondaryToolbarButton-firstPage-icon: url(images/lucide/chevrons-left.svg);
+  --secondaryToolbarButton-lastPage-icon: url(images/lucide/chevrons-right.svg);
+  --secondaryToolbarButton-rotateCcw-icon: url(images/lucide/rotate-ccw.svg);
+  --secondaryToolbarButton-rotateCw-icon: url(images/lucide/rotate-cw.svg);
+  --secondaryToolbarButton-selectTool-icon: url(images/lucide/mouse-pointer-2.svg);
+  --secondaryToolbarButton-handTool-icon: url(images/lucide/hand.svg);
+  --secondaryToolbarButton-scrollPage-icon: url(images/lucide/file-text.svg);
+  --secondaryToolbarButton-scrollVertical-icon: url(images/lucide/move-vertical.svg);
+  --secondaryToolbarButton-scrollHorizontal-icon: url(images/lucide/move-horizontal.svg);
+  --secondaryToolbarButton-scrollWrapped-icon: url(images/lucide/wrap-text.svg);
+  --secondaryToolbarButton-spreadNone-icon: url(images/lucide/square.svg);
+  --secondaryToolbarButton-spreadOdd-icon: url(images/lucide/columns-2.svg);
+  --secondaryToolbarButton-spreadEven-icon: url(images/lucide/columns-3.svg);
   --secondaryToolbarButton-imageAltTextSettings-icon: var(
     --toolbarButton-editorStamp-icon
   );
-  --secondaryToolbarButton-documentProperties-icon: url(images/secondaryToolbarButton-documentProperties.svg);
-  --editorParams-stampAddImage-icon: url(images/toolbarButton-zoomIn.svg);
+  --secondaryToolbarButton-documentProperties-icon: url(images/lucide/file-cog.svg);
+  --editorParams-stampAddImage-icon: url(images/lucide/zoom-in.svg);
 }
 
 :root:dir(rtl) {
@@ -686,7 +686,11 @@ body {
     background-color: var(--toolbar-icon-bg-color);
     mask-size: cover;
     mask-image: var(--loading-icon);
+    animation: pdf-input-loader-spin 1s linear infinite;
   }
+
+  @keyframes pdf-input-loader-spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .loadingInput::after { animation: none; } }
 
   &.start::after {
     inset-inline-start: 4px;

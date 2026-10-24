@@ -3,7 +3,8 @@ import { h, cloneElement } from "preact";
 import { forwardRef } from "preact/compat";
 import { useState, useRef, useCallback, useEffect } from "preact/hooks";
 import styled, { css } from "styled-components";
-import ArrowDownIcon from "./icons/arrow-down.svg";
+import { ChevronDown as ArrowDownIcon } from "lucide-preact";
+import { translationColors as colors } from "common/scripts/uiTheme.js";
 
 /**
  *
@@ -21,42 +22,87 @@ import ArrowDownIcon from "./icons/arrow-down.svg";
 const Dropdown = forwardRef((props, ref) => {
     const [open, setOpen] = useState(false);
     const titleElRef = useRef();
-    const clickAwayHandler = useCallback((event) => {
-        // Chrome has the "path" property and Firefox has the "composedPath" function.
-        const path = event.path || (event.composedPath && event.composedPath());
-        if (!titleElRef.current.contains(path[0])) {
-            setOpen(false);
-            window.removeEventListener("click", clickAwayHandler);
+    const menuElRef = useRef();
+    const clickAwayHandlerRef = useRef();
+    const onCloseRef = useRef(props.onClose);
+    onCloseRef.current = props.onClose;
+    const setMenuOpen = useCallback((next, returnFocus = false) => {
+        setOpen(next);
+        if (!next) {
+            window.removeEventListener("click", clickAwayHandlerRef.current);
+            onCloseRef.current && onCloseRef.current();
+            if (returnFocus) titleElRef.current?.focus();
         }
     }, []);
+    const clickAwayHandler = useCallback((event) => {
+        const path = event.composedPath?.() || event.path || [];
+        if (!path.includes(titleElRef.current) && !path.includes(menuElRef.current)) setMenuOpen(false);
+    }, [setMenuOpen]);
+    clickAwayHandlerRef.current = clickAwayHandler;
+    const focusItem = (index) => {
+        const items = menuElRef.current?.querySelectorAll("[role=menuitemradio]");
+        if (!items?.length) return;
+        const next = (index + items.length) % items.length;
+        items.forEach((item, i) => item.tabIndex = i === next ? 0 : -1);
+        items[next].focus();
+    };
+    const handleTitleKeyDown = (event) => {
+        if (event.key === "Enter" || event.key === " " || event.key === "ArrowDown") {
+            event.preventDefault();
+            if (!open) {
+                setOpen(true);
+                window.addEventListener("click", clickAwayHandler);
+                props.onOpen && props.onOpen();
+                requestAnimationFrame(() => focusItem(0));
+            } else if (event.key === "ArrowDown") focusItem(0);
+        } else if (event.key === "Escape" && open) setMenuOpen(false, true);
+    };
+    const handleItemKeyDown = (event) => {
+        const items = [...(menuElRef.current?.querySelectorAll("[role=menuitemradio]") || [])];
+        const index = items.indexOf(event.currentTarget);
+        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault(); focusItem(index + (event.key === "ArrowDown" ? 1 : -1));
+        } else if (event.key === "Home") { event.preventDefault(); focusItem(0); }
+        else if (event.key === "End") { event.preventDefault(); focusItem(items.length - 1); }
+        else if (event.key === "Escape") { event.preventDefault(); setMenuOpen(false, true); }
+        else if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); }
+    };
     const Items = props.children?.map((child) =>
         cloneElement(child, {
             active: child.props.eventKey === props.activeKey,
             onSelect: (eventKey, event) => {
                 if (eventKey !== props.activeKey) props.onSelect && props.onSelect(eventKey, event);
+                setMenuOpen(false, true);
             },
+            onKeyDown: handleItemKeyDown,
         })
     );
     useEffect(() => {
-        return () => window.removeEventListener("click", clickAwayHandler);
-    }, [clickAwayHandler]);
+        return () => window.removeEventListener("click", clickAwayHandlerRef.current);
+    }, []);
 
     return (
         <StyledSelect className={props.className} ref={ref}>
             <Title
+                as="button"
                 ref={titleElRef}
+                type="button"
+                aria-haspopup="menu"
+                aria-expanded={open}
+                aria-label={props["aria-label"] || props.title}
                 onClick={() => {
                     if (!open) {
                         window.addEventListener("click", clickAwayHandler);
                         props.onOpen && props.onOpen();
-                    } else props.onClose && props.onClose();
-                    setOpen(!open);
+                        setOpen(true);
+                    } else setMenuOpen(false);
                 }}
+                onKeyDown={handleTitleKeyDown}
             >
                 {props.title}
-                <StyledArrowDownIcon />
+                <StyledArrowDownIcon open={open} aria-hidden="true" />
             </Title>
-            <Menu open={open}>{Items}</Menu>
+            <Menu ref={menuElRef} role="menu" open={open}>{Items}</Menu>
         </StyledSelect>
     );
 });
@@ -76,9 +122,12 @@ Dropdown.displayName = "Dropdown";
 Dropdown.Item = function DropdownItem(props) {
     return (
         <Item
-            role="menuitem"
+            role="menuitemradio"
             className={props.className}
             active={props.active}
+            tabIndex={props.active ? 0 : -1}
+            aria-checked={Boolean(props.active)}
+            onKeyDown={props.onKeyDown}
             onClick={(event) => {
                 props.onSelect && props.onSelect(props.eventKey, event);
             }}
@@ -103,11 +152,11 @@ const Menu = styled.ul`
     min-width: 100px;
     margin: 0;
     list-style: none;
-    font-size: 14px;
+    font-size: 16px;
     text-align: left;
-    background-color: ${(props) => (props.theme?.isDark ? "#2a2e45" : "#f7f3d0")};
-    color: ${(props) => (props.theme?.isDark ? "#c8d3f5" : "#545464")};
-    border: 1px solid ${(props) => (props.theme?.isDark ? "#3b4261" : "#c9c19f")};
+    background-color: ${(props) => (props.theme?.isDark ? colors.darkNavy : colors.cream)};
+    color: ${(props) => (props.theme?.isDark ? colors.darkText : colors.ink)};
+    border: 1px solid ${(props) => (props.theme?.isDark ? colors.darkMuted : colors.inputBorder)};
     border-radius: 6px;
     padding: 6px 0;
     position: absolute;
@@ -139,45 +188,58 @@ const Title = styled.a`
     line-height: 1.5;
     border-radius: 6px;
     transition: color 0.2s linear, background-color 0.3s linear;
-    color: ${(props) => (props.theme?.isDark ? "#b4c0e8" : "#716e61")};
+    color: ${(props) => (props.theme?.isDark ? colors.darkMuted : colors.muted)};
     background-color: transparent;
     overflow: hidden;
+    min-height: 32px;
+    font-family: inherit;
+    cursor: pointer;
+    &:focus-visible { outline: 2px solid ${(props) => props.theme?.isDark ? colors.saffron : colors.deepBlue}; outline-offset: 2px; }
     &:hover {
-        color: ${(props) => (props.theme?.isDark ? "#c8d3f5" : "#545464")};
-        background: ${(props) => (props.theme?.isDark ? "#2f334d" : "#e9dfb5")};
+    color: ${(props) => (props.theme?.isDark ? colors.darkText : colors.ink)};
+    background: ${(props) => (props.theme?.isDark ? colors.darkSurface : colors.canvas)};
     }
     &:hover svg {
-        fill: ${(props) => (props.theme?.isDark ? "#c8d3f5" : "#545464")};
+        color: ${(props) => (props.theme?.isDark ? colors.darkText : colors.ink)};
     }
 `;
 const StyledArrowDownIcon = styled(ArrowDownIcon)`
-    fill: ${(props) => (props.theme?.isDark ? "#828bb8" : "#8a8980")};
+    color: ${(props) => (props.theme?.isDark ? colors.darkMuted : colors.muted)};
+    width: 18px;
+    height: 18px;
     margin-left: 4px;
+    transition: transform 180ms ease;
+    transform: rotate(${(props) => (props.open ? "180deg" : "0deg")});
+    @media (prefers-reduced-motion: reduce) { transition: none; }
 `;
 
 /* Style of Item */
 const ActiveStyle = css`
-    color: ${(props) => (props.theme?.isDark ? "#82aaff" : "#4d699b")};
+    color: ${(props) => (props.theme?.isDark ? colors.saffron : colors.clay)};
     font-weight: 700;
     background-color: ${(props) =>
-        props.theme?.isDark ? "rgba(130, 170, 255, 0.18)" : "rgba(77, 105, 155, 0.12)"};
+        props.theme?.isDark ? "rgba(255, 176, 16, 0.18)" : "rgba(169, 71, 29, 0.12)"};
     &:hover {
-        color: ${(props) => (props.theme?.isDark ? "#82aaff" : "#4d699b")};
+        color: ${(props) => (props.theme?.isDark ? colors.saffron : colors.clay)};
         background-color: ${(props) =>
-            props.theme?.isDark ? "rgba(130, 170, 255, 0.18)" : "rgba(77, 105, 155, 0.12)"};
+        props.theme?.isDark ? "rgba(255, 176, 16, 0.18)" : "rgba(169, 71, 29, 0.12)"};
     }
 `;
 const InActiveStyle = css`
-    color: ${(props) => (props.theme?.isDark ? "#c8d3f5" : "#545464")};
+    color: ${(props) => (props.theme?.isDark ? colors.darkText : colors.ink)};
     &:hover {
-        color: ${(props) => (props.theme?.isDark ? "#c8d3f5" : "#545464")};
-        background-color: ${(props) => (props.theme?.isDark ? "#2f334d" : "#f2ecbc")};
+        color: ${(props) => (props.theme?.isDark ? colors.darkText : colors.ink)};
+        background-color: ${(props) => (props.theme?.isDark ? colors.darkSurface : colors.canvas)};
     }
 `;
 const Item = styled.li`
     display: flex;
-    padding: 8px 12px;
+    min-height: 32px;
+    box-sizing: border-box;
+    align-items: center;
+    padding: 6px 12px;
     clear: both;
+    font-size: 16px;
     font-weight: 400;
     line-height: 1.4;
     white-space: nowrap;
@@ -186,6 +248,7 @@ const Item = styled.li`
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    &:focus-visible { outline: 2px solid ${(props) => props.theme?.isDark ? colors.saffron : colors.deepBlue}; outline-offset: -2px; }
     -webkit-transition: color 0.3s linear, background-color 0.3s linear;
     transition: color 0.3s linear, background-color 0.3s linear;
     transition: color 0.3s linear, background-color 0.3s linear;

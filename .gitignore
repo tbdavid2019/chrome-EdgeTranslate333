@@ -1,4 +1,5 @@
 # Common build/publish outputs
+output/
 **/build/
 **/dist/
 **/publish/

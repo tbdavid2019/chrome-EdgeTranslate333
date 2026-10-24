@@ -13,6 +13,7 @@ const eslint = require("gulp-eslint");
 const mergeStream = require("merge-stream");
 const minimist = require("minimist");
 const spawn = require("child_process").spawn;
+const crypto = require("crypto");
 
 let args = minimist(process.argv.slice(2));
 let browser = args.browser || "chrome"; // store the name of browser: enum{chrome,firefox}
@@ -60,7 +61,8 @@ exports.pack = gulp.series(
         // Safari는 zip 불필요 (Xcode 연동으로 대체)
         if (browser === "safari") return done();
         return packToZip();
-    }
+    },
+    exportReleaseArtifacts
 );
 /**
  * End public tasks' definition
@@ -102,6 +104,38 @@ function packToZip() {
     let match_dir = `./build/${browser}/**/*`;
     let packageName = `edge_translate_${browser}.zip`;
     return gulp.src(match_dir).pipe(zip(packageName)).pipe(gulp.dest("./build/"));
+}
+
+/** Copy release artifacts to the visible repository-level output folder. */
+function exportReleaseArtifacts(done) {
+    if (browser !== "chrome") return done();
+
+    try {
+        const packageJson = JSON.parse(fs.readFileSync("./package.json", "utf8"));
+        const packageName = "edge_translate_chrome.zip";
+        const archivePath = path.resolve(`./build/${packageName}`);
+        const outputDir = path.resolve(__dirname, "../../output");
+        const unpackedPath = path.join(outputDir, "chrome");
+        const releaseName = `edge_translate_chrome_v${packageJson.version}.zip`;
+        const releasePath = path.join(outputDir, releaseName);
+
+        fs.mkdirSync(outputDir, { recursive: true });
+        fs.copyFileSync(archivePath, releasePath);
+        const digest = crypto.createHash("sha256").update(fs.readFileSync(releasePath)).digest("hex");
+        fs.writeFileSync(`${releasePath}.sha256`, `${digest}  ${releaseName}\n`);
+
+        // This exact subdirectory is reserved for the unpacked Chrome app.
+        // Refuse to follow a user-created symlink and leave sibling reports intact.
+        if (fs.existsSync(unpackedPath) && fs.lstatSync(unpackedPath).isSymbolicLink()) {
+            throw new Error(`Refusing to replace symlink at ${unpackedPath}`);
+        }
+        fs.rmSync(unpackedPath, { recursive: true, force: true });
+        fs.cpSync(path.resolve("./build/chrome"), unpackedPath, { recursive: true });
+        log(`Release artifacts written to ${outputDir}`);
+    } catch (error) {
+        return done(error);
+    }
+    done();
 }
 
 /**
@@ -299,17 +333,33 @@ function packStatic() {
             .pipe(gulp.dest(output_dir));
 
         // pdf.js viewer assets under ./web/**
-        let webAssets = gulp.src(["./web/**"], { base: "." }).pipe(gulp.dest(output_dir));
+        let webAssets = gulp
+            .src([
+                "./web/**",
+                "!./web/cmaps/**",
+                "!./web/standard_fonts/**",
+                "!./web/wasm/**",
+                "!./web/iccs/**",
+            ], { base: "." })
+            .pipe(gulp.dest(output_dir));
 
         // pdf.js core files to build/ (sibling to web/), mirroring official layout
         let pdfjsCore = gulp
-            .src([
-                "../../node_modules/pdfjs-dist/build/pdf.mjs",
-                "../../node_modules/pdfjs-dist/build/pdf.worker.mjs",
-            ], { base: "../../node_modules/pdfjs-dist" })
+            .src("../../node_modules/pdfjs-dist/build/*.mjs", { base: "../../node_modules/pdfjs-dist" })
             .pipe(gulp.dest(`${output_dir}build/`));
 
-        const streams = [staticJSFiles, staticOtherFiles, webAssets, pdfjsCore];
+        // PDF.js loads these optional font, CMap, ICC and WASM resources at
+        // runtime. Bundle the exact installed distribution alongside the viewer.
+        let pdfjsAssets = gulp
+            .src([
+                "../../node_modules/pdfjs-dist/cmaps/**/*",
+                "../../node_modules/pdfjs-dist/standard_fonts/**/*",
+                "../../node_modules/pdfjs-dist/wasm/**/*",
+                "../../node_modules/pdfjs-dist/iccs/**/*",
+            ], { base: "../../node_modules/pdfjs-dist" })
+            .pipe(gulp.dest(`${output_dir}web/`));
+
+        const streams = [staticJSFiles, staticOtherFiles, webAssets, pdfjsCore, pdfjsAssets];
         if (googleJS) streams.push(googleJS);
         return mergeStream(streams);
     }
@@ -328,17 +378,31 @@ function packStatic() {
         .pipe(gulp.dest(output_dir));
 
     // pdf.js viewer assets under ./web/**
-    let webAssets = gulp.src(["./web/**"], { base: "." }).pipe(gulp.dest(output_dir));
+    let webAssets = gulp
+        .src([
+            "./web/**",
+            "!./web/cmaps/**",
+            "!./web/standard_fonts/**",
+            "!./web/wasm/**",
+            "!./web/iccs/**",
+        ], { base: "." })
+        .pipe(gulp.dest(output_dir));
 
     // pdf.js core files to build/
     let pdfjsCore = gulp
-        .src([
-            "../../node_modules/pdfjs-dist/build/pdf.mjs",
-            "../../node_modules/pdfjs-dist/build/pdf.worker.mjs",
-        ], { base: "../../node_modules/pdfjs-dist" })
+        .src("../../node_modules/pdfjs-dist/build/*.mjs", { base: "../../node_modules/pdfjs-dist" })
         .pipe(gulp.dest(`${output_dir}build/`));
 
-    const streams = [staticJSFiles, staticOtherFiles, webAssets, pdfjsCore];
+    let pdfjsAssets = gulp
+        .src([
+            "../../node_modules/pdfjs-dist/cmaps/**/*",
+            "../../node_modules/pdfjs-dist/standard_fonts/**/*",
+            "../../node_modules/pdfjs-dist/wasm/**/*",
+            "../../node_modules/pdfjs-dist/iccs/**/*",
+        ], { base: "../../node_modules/pdfjs-dist" })
+        .pipe(gulp.dest(`${output_dir}web/`));
+
+    const streams = [staticJSFiles, staticOtherFiles, webAssets, pdfjsCore, pdfjsAssets];
     if (googleJS) streams.push(googleJS);
     return mergeStream(streams);
 }

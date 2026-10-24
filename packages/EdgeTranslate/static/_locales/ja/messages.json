@@ -355,6 +355,18 @@
     "message": "言語設定を展開する",
     "description": "言語設定展開オプション"
   },
+  "VoiceSettings": {
+    "message": "音声設定",
+    "description": "VoiceSettings"
+  },
+  "SelectLanguage": {
+    "message": "言語を選択",
+    "description": "SelectLanguage"
+  },
+  "SelectVoice": {
+    "message": "音声を選択",
+    "description": "SelectVoice"
+  },
   "HybridTranslatorConfig": {
     "message": "ハイブリッド翻訳ソース設定",
     "description": "翻訳結果の各部分で使用される翻訳ソースを設定します。"

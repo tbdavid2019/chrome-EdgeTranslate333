@@ -40,6 +40,7 @@ export class BannerController {
                         // Google page translator runs in website context, so we use window.postMessage
                         // for message passing.
                         this.currentTranslator = "google";
+                        this.lastDistance = null;
                         // Ensure we don't attach multiple handlers
                         if (this.canceller) this.canceller();
                         let handler = this.googleMessageHandler.bind(this);
@@ -67,6 +68,7 @@ export class BannerController {
 
         // Kick off DOM fallback on explicit request
         this.channel.on("start_dom_page_translate", () => {
+            if (this.currentTranslator === "google" && this.lastDistance > 0) return;
             this.startDomFallback();
             // initial scan to cover existing content
             const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
@@ -76,10 +78,14 @@ export class BannerController {
             this.translateBatchNodes(nodes);
         });
 
+        this.channel.on("command", (detail) => {
+            if (detail.command === "cancel_page_translate") this.stopDomFallback();
+        });
+
         // Background may request canceling DOM fallback scheduling when banner is visible
         this.channel.on("page_translate_control", (detail) => {
             if (detail && detail.action === "cancel_dom_fallback") {
-                // nothing needed here yet (fallback scheduling is background-side), keep hook for future use
+                this.stopDomFallback();
             }
         });
     }
@@ -158,6 +164,7 @@ export class BannerController {
                     break;
                 }
                 this.lastDistance = data.distance;
+                this.stopDomFallback();
 
                 getOrSetDefaultSettings("HidePageTranslatorBanner", DEFAULT_SETTINGS).then(
                     (result) => {
@@ -222,7 +229,7 @@ export class BannerController {
     startDomFallback() {
         if (this._mo) return;
         const isMeaningful = (node) => {
-            if (!node || node.nodeType !== Node.TEXT_NODE) return false;
+            if (!node || !node.isConnected || node.nodeType !== Node.TEXT_NODE) return false;
             const text = String(node.nodeValue || "").trim();
             if (text.length < 2) return false;
             const p = node.parentElement;
@@ -233,6 +240,9 @@ export class BannerController {
             return true;
         };
         const enqueue = (node) => {
+            // rAF can be suspended in hidden tabs. Do not retain an unbounded
+            // stream of nodes from feeds or virtualized pages while waiting.
+            if (this._pendingNodes.size >= 512) return;
             this._pendingNodes.add(node);
             if (this._scheduleBatch) return;
             this._scheduleBatch = requestAnimationFrame(() => {
@@ -292,10 +302,13 @@ export class BannerController {
         const parents = new Set();
         for (const n of nodes) {
             const p = n.parentElement;
-            if (p && !this._translatedSet.has(p)) parents.add(p);
+            if (n.isConnected && p && !this._translatedSet.has(p) && !p.hasAttribute("data-et-translated")) parents.add(p);
         }
         if (!parents.size) return;
-        parents.forEach((p) => p.setAttribute("data-et-translated", "1"));
+        parents.forEach((p) => {
+            this._translatedSet.add(p);
+            p.setAttribute("data-et-translated", "1");
+        });
     }
 }
 

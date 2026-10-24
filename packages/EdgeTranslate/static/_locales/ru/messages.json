@@ -355,6 +355,18 @@
     "message": "Развернуть настройки языка",
     "description": "Развернуть параметры настроек языка"
   },
+  "VoiceSettings": {
+    "message": "Настройки голоса",
+    "description": "VoiceSettings"
+  },
+  "SelectLanguage": {
+    "message": "Выберите язык",
+    "description": "SelectLanguage"
+  },
+  "SelectVoice": {
+    "message": "Выберите голос",
+    "description": "SelectVoice"
+  },
   "HybridTranslatorConfig": {
     "message": "Настройки источника смешанного перевода",
     "description": "Настройка источника перевода для различных частей результатов перевода."

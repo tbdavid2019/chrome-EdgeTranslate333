@@ -1,5 +1,6 @@
 const DEFAULT_PDF_DETECTION_CONFIG = {
     cacheTtlMs: 5000,
+    maxCacheEntries: 256,
     redirectDelayMs: 10,
     viewerPath: "web/viewer.html",
     viewerQuery: {
@@ -137,14 +138,23 @@ function buildViewerUrl(url, config) {
     return `${viewerUrl}?${params.toString()}`;
 }
 
-function createCache(ttlMs) {
+export function createCache(ttlMs, maxEntries = 256) {
     const store = new Map();
+    const capacity = Number.isFinite(maxEntries) ? Math.max(1, Math.floor(maxEntries)) : 256;
 
     return {
         set(key, value) {
             if (!key) return;
-            const expireAt = ttlMs ? Date.now() + ttlMs : 0;
+            const now = Date.now();
+            // Expired URLs are rarely visited again, so reads cannot be the
+            // only eviction path. Prune on writes and enforce a hard bound.
+            for (const [cachedKey, entry] of store) {
+                if (entry.expireAt && entry.expireAt <= now) store.delete(cachedKey);
+            }
+            const expireAt = ttlMs ? now + ttlMs : 0;
+            store.delete(key);
             store.set(key, { value, expireAt });
+            while (store.size > capacity) store.delete(store.keys().next().value);
         },
         get(key) {
             const entry = store.get(key);
@@ -153,7 +163,12 @@ function createCache(ttlMs) {
                 store.delete(key);
                 return undefined;
             }
+            store.delete(key);
+            store.set(key, entry);
             return entry.value;
+        },
+        get size() {
+            return store.size;
         },
         clear() {
             store.clear();
@@ -346,7 +361,7 @@ function setupWebRequestListener({ cache, probeCache, config, logInfo, logWarn }
     }
 }
 
-function setupNavigationListener({ cache, config, logInfo, logWarn, probeCache, inflightProbes }) {
+function setupNavigationListener({ cache, config, logInfo, logWarn, probeCache, inflightProbes, webRequestAvailable }) {
     if (
         !chrome?.webNavigation?.onCommitted ||
         typeof chrome.webNavigation.onCommitted.addListener !== "function"
@@ -367,12 +382,19 @@ function setupNavigationListener({ cache, config, logInfo, logWarn, probeCache, 
             }
 
             let shouldRedirect = true;
-            const cached = cache.get(url);
+            // Header results outlive the short navigation cache in probeCache.
+            // This preserves PDF MIME detection for slow pages and opaque URLs.
+            const cached = cache.get(url) || probeCache.get(url);
             let pdfConfirmed = cached?.isPdf === true;
             if (cached) {
                 if (cached.isPdf === false || cached.isDownload) {
                     shouldRedirect = false;
                 }
+            } else if (webRequestAvailable && !isPotentialPdfUrl(url, config)) {
+                // A cache miss on an ordinary page is not a reason to fetch it
+                // again when response headers are available. Without that API,
+                // keep probing opaque URLs so MIME-based detection still works.
+                return;
             } else if (config.enableNetworkProbe && shouldNetworkProbe(url)) {
                 const probeResult = await confirmPdfByNetwork(url, {
                     probeCache,
@@ -428,8 +450,8 @@ function setupNavigationListener({ cache, config, logInfo, logWarn, probeCache, 
 
 export function setupPdfDetection({ config: overrides, logInfo, logWarn } = {}) {
     const config = extendConfig(overrides);
-    const cache = createCache(config.cacheTtlMs);
-    const probeCache = createCache(config.networkProbeCacheTtlMs);
+    const cache = createCache(config.cacheTtlMs, config.maxCacheEntries);
+    const probeCache = createCache(config.networkProbeCacheTtlMs, config.maxCacheEntries);
     const inflightProbes = new Map();
 
     const webRequest = setupWebRequestListener({
@@ -440,6 +462,7 @@ export function setupPdfDetection({ config: overrides, logInfo, logWarn } = {}) 
         logWarn,
     });
     const navigation = setupNavigationListener({
+        webRequestAvailable: webRequest.ok,
         cache,
         config,
         logInfo,

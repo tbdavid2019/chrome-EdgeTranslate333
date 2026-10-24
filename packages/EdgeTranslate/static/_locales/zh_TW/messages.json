@@ -355,6 +355,18 @@
     "message": "展開語言設置",
     "description": "將語言設置選項展開"
   },
+  "VoiceSettings": {
+    "message": "語音設定",
+    "description": "VoiceSettings"
+  },
+  "SelectLanguage": {
+    "message": "選擇語言",
+    "description": "SelectLanguage"
+  },
+  "SelectVoice": {
+    "message": "選擇語音",
+    "description": "SelectVoice"
+  },
   "HybridTranslatorConfig": {
     "message": "混合翻譯源設置",
     "description": "設置翻譯結果各個部分使用的翻譯源。"

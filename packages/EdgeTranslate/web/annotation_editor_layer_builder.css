@@ -984,6 +984,7 @@
             .altTextSpinner {
               display: inline-block;
               mask-image: var(--new-alt-text-spinner-icon);
+              animation: pdf-alt-text-loader-spin 1s linear infinite;
             }
           }
         }
@@ -1423,3 +1424,6 @@
     }
   }
 }
+
+@keyframes pdf-alt-text-loader-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .altTextSpinner, #newAltTextDownloadModel::before { animation: none !important; } }

@@ -1,6 +1,6 @@
 {
     "name": "edge_translate",
-    "version": "2.9",
+    "version": "3.4.6",
     "private": true,
     "scripts": {
         "test": "jest",
@@ -62,6 +62,7 @@
     "dependencies": {
         "@edge_translate/translators": "^0.1.4",
         "dompurify": "^2.3.6",
+        "lucide-preact": "^1.61.0",
         "pdfjs-dist": "^5.4.54",
         "preact": "^10.6.6",
         "preact-render-to-string": "^5.1.20",

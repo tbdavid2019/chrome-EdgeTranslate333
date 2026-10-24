@@ -1,6 +1,6 @@
 /** @jsx h */
 import { h, Fragment } from "preact";
-import { useCallback, useEffect, useRef, useReducer, useState } from "preact/hooks";
+import { useCallback, useMemo, useEffect, useRef, useReducer, useState } from "preact/hooks";
 import styled, { ThemeProvider } from "styled-components";
 import {
   resolveAppearanceState,
@@ -15,11 +15,8 @@ import { checkTimestamp } from "./utils.js";
 import Notifier from "./library/notifier/notifier.js";
 import DOMPurify from "dompurify";
 import DrawerBlock from "./DrawerBlock.jsx";
-import EditIcon from "./icons/edit.svg";
-import EditDoneIcon from "./icons/edit-done.svg";
-import PronounceIcon from "./icons/pronounce.svg";
-import PronounceLoadingIcon from "./icons/loading.jsx";
-import CopyIcon from "./icons/copy.svg";
+import { Pencil as EditIcon, Check as EditDoneIcon, Volume2 as PronounceIcon, AudioLines as GooglePronounceIcon, LoaderCircle as PronounceLoadingIcon, Copy as CopyIcon } from "lucide-preact";
+import { translationColors as colors, translationType as type } from "common/scripts/uiTheme.js";
 
 // TTS speeds and consecutive click tracking
 let sourceTTSSpeed = "fast",
@@ -124,10 +121,14 @@ export default function Result(props) {
 
   const [isDark, setIsDark] = useState(false);
   const appearanceRef = useRef(DEFAULT_SETTINGS.Appearance);
-  const matchMediaFn =
+  // Keep effect dependencies stable across renders. A new bound function here
+  // restarts initialization, whose async state updates trigger another render.
+  const matchMediaFn = useMemo(() =>
     typeof window !== "undefined" && typeof window.matchMedia === "function"
       ? window.matchMedia.bind(window)
-      : undefined;
+      : undefined,
+    [],
+  );
 
   /**
    * Whether to fold too long translation content.
@@ -185,6 +186,9 @@ export default function Result(props) {
             </PrimaryText>
             <StyledCopyIcon
               role="button"
+              tabIndex={0}
+              aria-label={chrome.i18n.getMessage("CopyResult")}
+              onKeyDown={activateOnKeyboard}
               onClick={() =>
                 setCopyResult({
                   copy: true,
@@ -199,7 +203,10 @@ export default function Result(props) {
               {displayTPronunciationIcon &&
                 (targetPronouncing ? (
                   <StyledPronounceLoadingIcon
-                    role="button"
+                          role="button"
+                    tabIndex={0}
+                    aria-label={chrome.i18n.getMessage("PronounceTranslated")}
+                    onKeyDown={activateOnKeyboard}
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -225,11 +232,15 @@ export default function Result(props) {
                         setStopping(false);
                       }
                     }}
-                    title={chrome.i18n.getMessage("StopPronounce")}
+                    title={chrome.i18n.getMessage("PronounceTranslated")}
                   />
                 ) : (
                   <StyledPronounceIcon
-                    role="button"
+                          role="button"
+                    tabIndex={0}
+                    aria-label={chrome.i18n.getMessage("PronounceTranslated")}
+                    title={chrome.i18n.getMessage("PronounceTranslated")}
+                    onKeyDown={activateOnKeyboard}
                     onClick={() => setTargetPronounce(true)}
                   />
                 ))}
@@ -240,6 +251,9 @@ export default function Result(props) {
                 ) && (
                   <StyledGooglePronounceIcon
                     role="button"
+                    tabIndex={0}
+                    aria-label={chrome.i18n.getMessage("OpenGooglePronounce")}
+                    onKeyDown={activateOnKeyboard}
                     onClick={() => openGooglePronounce(props.mainMeaning)}
                     title={chrome.i18n.getMessage("OpenGooglePronounce")}
                   />
@@ -282,6 +296,9 @@ export default function Result(props) {
             {editing ? (
               <StyledEditDoneIcon
                 role="button"
+                tabIndex={0}
+                aria-label={chrome.i18n.getMessage("Retranslate")}
+                onKeyDown={activateOnKeyboard}
                 title={chrome.i18n.getMessage("Retranslate")}
                 onClick={() =>
                   setEditing({
@@ -293,6 +310,9 @@ export default function Result(props) {
             ) : (
               <StyledEditIcon
                 role="button"
+                tabIndex={0}
+                aria-label={chrome.i18n.getMessage("EditText")}
+                onKeyDown={activateOnKeyboard}
                 title={chrome.i18n.getMessage("EditText")}
                 onClick={() =>
                   setEditing({
@@ -308,7 +328,10 @@ export default function Result(props) {
               {displaySPronunciationIcon &&
                 (sourcePronouncing ? (
                   <StyledPronounceLoadingIcon
-                    role="button"
+                          role="button"
+                    tabIndex={0}
+                    aria-label={chrome.i18n.getMessage("PronounceOriginal")}
+                    onKeyDown={activateOnKeyboard}
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -334,11 +357,15 @@ export default function Result(props) {
                         setStopping(false);
                       }
                     }}
-                    title={chrome.i18n.getMessage("StopPronounce")}
+                    title={chrome.i18n.getMessage("PronounceOriginal")}
                   />
                 ) : (
                   <StyledPronounceIcon
-                    role="button"
+                          role="button"
+                    tabIndex={0}
+                    aria-label={chrome.i18n.getMessage("PronounceOriginal")}
+                    title={chrome.i18n.getMessage("PronounceOriginal")}
+                    onKeyDown={activateOnKeyboard}
                     onClick={() => setSourcePronounce(true)}
                   />
                 ))}
@@ -349,6 +376,9 @@ export default function Result(props) {
                 ) && (
                   <StyledGooglePronounceIcon
                     role="button"
+                    tabIndex={0}
+                    aria-label={chrome.i18n.getMessage("OpenGooglePronounce")}
+                    onKeyDown={activateOnKeyboard}
                     onClick={() => openGooglePronounce(props.originalText)}
                     title={chrome.i18n.getMessage("OpenGooglePronounce")}
                   />
@@ -685,19 +715,26 @@ export default function Result(props) {
 
 const BlockPadding = "10px";
 const BlockMargin = "8px";
-const LightPrimary = "#82aaff";
-const LightPrimarySoft = "#4d699b";
-const Gray = "#716e61";
-const BgLight = "#f7f3d0";
-const BorderLight = "#d3c8a4";
-const TextLight = "#545464";
-const MutedLight = "#8a8980";
-const BgDark = "#2a2e45";
-const TextDark = "#c8d3f5";
-const GrayDark = "#b4c0e8";
-const BorderDark = "#3b4261";
+const LightPrimary = colors.saffron;
+const LightPrimarySoft = colors.clay;
+const Gray = colors.muted;
+const BgLight = colors.cream;
+const BorderLight = colors.inputBorder;
+const TextLight = colors.ink;
+const MutedLight = colors.muted;
+const BgDark = colors.darkSurface;
+const TextDark = colors.darkText;
+const GrayDark = colors.darkMuted;
+const BorderDark = colors.darkMuted;
 const BlockContentDrawerHeight = 150; // drawer height for blocks
 const TextContentDrawerHeight = 50; // drawer height for texts
+
+function activateOnKeyboard(event) {
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    event.currentTarget.click();
+  }
+}
 
 /**
  * basic style for a block used to display content
@@ -721,20 +758,20 @@ export const Block = styled.div`
     props.theme.isDark
       ? "0 10px 24px rgba(0, 0, 0, 0.16)"
       : "0 10px 24px rgba(84, 84, 100, 0.06)"};
-  line-height: 1.42;
+  line-height: 1.6;
   letter-spacing: 0.01em;
 `;
 
 const Source = styled(Block)`
   font-weight: normal;
   white-space: pre-wrap;
-  background-color: ${(props) => (props.theme.isDark ? "#1e2030" : "#fbf7dd")};
+  background-color: ${(props) => (props.theme.isDark ? colors.darkNavy : colors.canvas)};
 `;
 
 const Target = styled(Block)`
   font-weight: normal;
   white-space: pre-wrap;
-  background-color: ${(props) => (props.theme.isDark ? "#1c2030" : "#fff9dd")};
+  background-color: ${(props) => (props.theme.isDark ? colors.darkSurface : colors.cream)};
 `;
 
 const Detail = styled(Block)`
@@ -757,12 +794,12 @@ const SectionLabel = styled.div`
   color: ${(props) =>
     props.accent
       ? props.theme.isDark
-        ? "#ffc777"
-        : "#b35b25"
+        ? colors.saffron
+        : colors.clay
       : props.theme.isDark
-        ? "#828bb8"
-        : "#8a8980"};
-  font-size: 11px;
+        ? colors.darkMuted
+        : colors.muted};
+  font-size: ${type.metadata};
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -771,44 +808,52 @@ const SectionLabel = styled.div`
 const PrimaryText = styled.div`
   flex: 1 1 auto;
   padding-left: 3px;
-  font-size: 1.08rem;
-  line-height: 1.48;
-  font-weight: 650;
-  color: ${(props) => (props.theme.isDark ? "#f6c177" : "#545464")};
+  font-size: ${type.body};
+  line-height: 1.6;
+  font-weight: 600;
+  color: ${(props) => (props.theme.isDark ? colors.darkText : colors.ink)};
 `;
 
 const SecondaryText = styled.div`
   flex: 1 1 auto;
   padding-left: 3px;
-  font-size: 1rem;
-  line-height: 1.5;
-  font-weight: 560;
-  color: ${(props) => (props.theme.isDark ? "#e0def4" : "#545464")};
+  font-size: ${type.body};
+  line-height: 1.6;
+  font-weight: 400;
+  color: ${(props) => (props.theme.isDark ? colors.darkText : colors.ink)};
 `;
 
 const StyledEditIcon = styled(EditIcon)`
-  width: 18px;
-  height: 18px;
-  fill: ${(props) => (props.theme.isDark ? GrayDark : Gray)};
+  width: 32px;
+  height: 32px;
+  padding: 7px;
+  box-sizing: border-box;
+  cursor: pointer;
+  color: ${(props) => (props.theme.isDark ? GrayDark : Gray)};
   flex-shrink: 0;
   margin-left: 10px;
   margin-top: 2px;
-  transition: fill 0.2s linear;
+  transition: color 0.2s linear;
+  &:focus-visible { outline: 2px solid ${(props) => props.theme.isDark ? colors.saffron : colors.deepBlue}; outline-offset: 1px; border-radius: 4px; }
   &:hover {
-    fill: ${(props) => (props.theme.isDark ? TextDark : TextLight)};
+    color: ${(props) => (props.theme.isDark ? TextDark : TextLight)};
   }
 `;
 
 const StyledEditDoneIcon = styled(EditDoneIcon)`
-  width: 18px;
-  height: 18px;
-  fill: ${(props) => (props.theme.isDark ? GrayDark : Gray)};
+  width: 32px;
+  height: 32px;
+  padding: 7px;
+  box-sizing: border-box;
+  cursor: pointer;
+  color: ${(props) => (props.theme.isDark ? GrayDark : Gray)};
   flex-shrink: 0;
   margin-left: 10px;
   margin-top: 2px;
-  transition: fill 0.2s linear;
+  transition: color 0.2s linear;
+  &:focus-visible { outline: 2px solid ${(props) => props.theme.isDark ? colors.saffron : colors.deepBlue}; outline-offset: 1px; border-radius: 4px; }
   &:hover {
-    fill: ${(props) => (props.theme.isDark ? TextDark : TextLight)};
+    color: ${(props) => (props.theme.isDark ? TextDark : TextLight)};
   }
 `;
 
@@ -827,26 +872,33 @@ const PronounceText = styled(DrawerBlock)`
 `;
 
 const StyledCopyIcon = styled(CopyIcon)`
-  width: 20px;
-  height: 20px;
-  fill: ${(props) => (props.theme.isDark ? GrayDark : Gray)};
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  box-sizing: border-box;
+  cursor: pointer;
+  color: ${(props) => (props.theme.isDark ? GrayDark : Gray)};
   flex-shrink: 0;
   margin-left: 10px;
   margin-top: 2px;
-  transition: fill 0.2s linear;
+  transition: color 0.2s linear;
+  &:focus-visible { outline: 2px solid ${(props) => props.theme.isDark ? colors.saffron : colors.deepBlue}; outline-offset: 1px; border-radius: 4px; }
   &:hover {
-    fill: ${(props) => (props.theme.isDark ? TextDark : TextLight)};
+    color: ${(props) => (props.theme.isDark ? TextDark : TextLight)};
   }
 `;
 
 const StyledPronounceIcon = styled(PronounceIcon)`
-  width: 20px;
-  height: 20px;
-  padding: 2px;
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  box-sizing: border-box;
+  cursor: pointer;
   margin-right: 10px;
-  fill: ${(props) => (props.theme.isDark ? LightPrimary : LightPrimarySoft)};
+  color: ${(props) => (props.theme.isDark ? LightPrimary : LightPrimarySoft)};
   flex-shrink: 0;
-  transition: fill 0.2s linear;
+  transition: color 0.2s linear;
+  &:focus-visible { outline: 2px solid ${(props) => props.theme.isDark ? colors.saffron : colors.deepBlue}; outline-offset: 1px; border-radius: 4px; }
   ${(props) =>
     props.theme.textDirection === "ltr"
       ? `
@@ -858,49 +910,32 @@ const StyledPronounceIcon = styled(PronounceIcon)`
             `}
 
   &:hover {
-    fill: ${(props) => (props.theme.isDark ? "#ffc777" : "#cc6d00")} !important;
+    color: ${(props) => (props.theme.isDark ? "#ffc777" : "#cc6d00")} !important;
   }
 `;
 
-const StyledPronounceLoadingIcon = styled(PronounceLoadingIcon)`
-  width: 24px;
-  height: 24px;
-  margin-right: 10px;
-  fill: ${(props) => (props.theme.isDark ? LightPrimary : LightPrimarySoft)};
-  padding: 0;
-  flex-shrink: 0;
-  cursor: pointer;
-  transition: fill 0.2s linear;
-
-  circle {
-    fill: none;
-    stroke: ${(props) => (props.theme.isDark ? LightPrimary : LightPrimarySoft)} !important;
-    transition: stroke 0.2s linear;
-  }
-
-  &:hover {
-    fill: ${(props) => (props.theme.isDark ? "#ffc777" : "#cc6d00")} !important;
-
-    circle {
-      stroke: ${(props) => (props.theme.isDark ? "#ffc777" : "#cc6d00")} !important;
-    }
-  }
+const StyledPronounceLoadingIcon = styled(PronounceLoadingIcon).attrs({ className: "translation-loading-icon" })`
+  width: 32px; height: 32px; padding: 5px; box-sizing: border-box;
+  margin-right: 10px; color: ${(props) => (props.theme.isDark ? LightPrimary : LightPrimarySoft)};
+  flex-shrink: 0; cursor: pointer; transform-origin: center; transform-box: fill-box;
+  animation: lucide-spin 1s linear infinite;
+  @keyframes lucide-spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { animation: none; }
+  &:focus-visible { outline: 2px solid ${(props) => props.theme.isDark ? colors.saffron : colors.deepBlue}; outline-offset: 1px; border-radius: 4px; }
+  &:hover { color: ${(props) => (props.theme.isDark ? "#ffc777" : "#cc6d00")} !important; }
 `;
-
-const GooglePronounceIcon = (props) => (
-  <svg viewBox="0 0 24 24" {...props}>
-    <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .533 5.333.533 12S5.867 24 12.48 24c3.44 0 6.1-1.12 7.96-3.067 1.893-1.893 2.48-4.56 2.48-6.72 0-.667-.053-1.28-.16-1.88h-10.28z" />
-  </svg>
-);
 
 const StyledGooglePronounceIcon = styled(GooglePronounceIcon)`
-  width: 20px;
-  height: 20px;
-  padding: 2px;
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  box-sizing: border-box;
+  cursor: pointer;
   margin-right: 10px;
-  fill: ${(props) => (props.theme.isDark ? LightPrimary : LightPrimarySoft)};
+  color: ${(props) => (props.theme.isDark ? LightPrimary : LightPrimarySoft)};
   flex-shrink: 0;
-  transition: fill 0.2s linear;
+  transition: color 0.2s linear;
+  &:focus-visible { outline: 2px solid ${(props) => props.theme.isDark ? colors.saffron : colors.deepBlue}; outline-offset: 1px; border-radius: 4px; }
   ${(props) =>
     props.theme.textDirection === "ltr"
       ? `
@@ -911,7 +946,7 @@ const StyledGooglePronounceIcon = styled(GooglePronounceIcon)`
             `}
 
   &:hover {
-    fill: ${(props) => (props.theme.isDark ? "#ffc777" : "#cc6d00")} !important;
+    color: ${(props) => (props.theme.isDark ? "#ffc777" : "#cc6d00")} !important;
   }
 `;
 
@@ -926,11 +961,11 @@ const BlockHead = styled.div`
 `;
 
 const BlockHeadTitle = styled.span`
-  font-size: 11px;
+  font-size: ${type.section};
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: ${(props) => (props.theme.isDark ? "#828bb8" : "#8a8980")};
+  color: ${(props) => (props.theme.isDark ? colors.darkMuted : colors.muted)};
   ${(props) =>
     `${props.theme.textDirection === "ltr" ? "margin-left" : "margin-right"}:${BlockPadding}`}
 `;
@@ -970,7 +1005,7 @@ const DetailHeadSpot = styled(BlockHeadSpot)`
 
 const Position = styled.div`
   color: ${(props) => (props.theme.isDark ? GrayDark : Gray)};
-  font-size: 11px;
+  font-size: ${type.metadata};
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -984,7 +1019,7 @@ const DetailMeaning = styled.div`
 
 const SynonymTitle = styled.div`
   color: ${(props) => (props.theme.isDark ? GrayDark : Gray)};
-  font-size: small;
+  font-size: ${type.metadata};
   ${(props) =>
     props.theme.textDirection === "ltr" ? "margin-left" : "margin-right"}: 10px;
 `;
@@ -1013,7 +1048,7 @@ const SynonymWord = styled.span`
       props.theme.isDark ? "rgba(180, 192, 232, 0.18)" : "rgba(84, 84, 100, 0.14)"};
   border-radius: 32px;
   cursor: pointer;
-  font-size: small;
+  font-size: ${type.metadata};
 `;
 
 const Definition = styled(Block)``;
@@ -1037,23 +1072,23 @@ const ExampleList = styled.ol`
   ${(props) =>
     props.theme.textDirection === "ltr"
       ? "padding-left"
-      : "padding-right"}: 1.5rem;
+      : "padding-right"}: 24px;
   margin: 0;
 `;
 
 const ExampleItem = styled.li`
   padding: 5px 0;
-  font-size: small;
+  font-size: ${type.metadata};
 `;
 
 const ExampleSource = styled.div`
-  font-size: medium;
+  font-size: ${type.body};
   line-height: 1.45;
 `;
 
 const ExampleTarget = styled.div`
   padding-top: 5px;
-  font-size: medium;
+  font-size: ${type.body};
   line-height: 1.45;
 `;
 

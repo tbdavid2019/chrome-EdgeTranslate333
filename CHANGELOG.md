@@ -1,5 +1,29 @@
 # Changelog
 
+## 3.4.6 - 2026-10-24
+
+- Migrated extension-owned popup, translation panel, selection control, notifications, and PDF viewer icons to Lucide with consistent stroke styling.
+- Replaced animated loading artwork with centered CSS-only Lucide spinners that respect reduced-motion preferences.
+- Preserved product identity artwork and Google Translate-owned assets.
+
+
+## 3.4.5 - 2026-10-24
+
+- Fixed PDF viewer URL parsing so signed URL escapes remain intact and cross-origin PDFs use PDF.js range loading instead of full-file blob preloads.
+- Restored legacy blob viewer links from their original source URL after reload and enabled credentialed PDF.js requests.
+- Bundled PDF.js CMaps, fonts, ICC profiles, WebAssembly resources, and matching core modules; corrected worker and sandbox paths.
+- Kept translator initialization compatible with the extension service worker and wait for translator configuration before populating engine choices.
+- Added a versioned Chrome ZIP, SHA-256 checksum, and unpacked extension under the repository-level `output/` directory when packing.
+- Restyled PDF viewer controls with the warm cream, saffron, and deep blue palette while preserving PDF page and text layer metrics.
+
+## 3.4.4 - 2026-10-24
+
+- Fixed repeated panel initialization caused by unstable theme effect dependencies, which continuously reloaded settings and requested translator options.
+- Released panel message handlers when effects are cleaned up to prevent retained callbacks and duplicate event processing.
+- Bounded PDF detection caches and pruned expired URLs on writes; stopped probing ordinary pages on cache misses when response-header detection is available, while preserving MIME-based PDF detection for opaque URLs.
+- Connected DOM fallback cancellation and limited retained pending nodes while animation frames are suspended.
+- Added regression tests for panel lifecycle, PDF cache limits, and DOM observer cleanup.
+
 ## 3.4.3 - 2026-07-06
 
 - Cleaned up legacy and dead code:

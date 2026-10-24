@@ -555,7 +555,11 @@ function toggleCheckedBtn(button, toggle, view = null) {
 }
 function toggleExpandedBtn(button, toggle, view = null) {
   button.classList.toggle("toggled", toggle);
-  button.setAttribute("aria-expanded", toggle);
+  if (button.getAttribute("role") === "radio") {
+    button.setAttribute("aria-checked", toggle);
+  } else {
+    button.setAttribute("aria-expanded", toggle);
+  }
   view?.classList.toggle("hidden", !toggle);
 }
 const calcRound = function () {
@@ -909,7 +913,7 @@ const defaultOptions = {
     kind: OptionKind.WORKER
   },
   workerSrc: {
-    value: "../build/pdf.worker.mjs",
+    value: "../build/build/pdf.worker.mjs",
     kind: OptionKind.WORKER
   }
 };
@@ -919,7 +923,7 @@ const defaultOptions = {
     kind: OptionKind.VIEWER
   };
   defaultOptions.sandboxBundleSrc = {
-    value: "../build/pdf.sandbox.mjs",
+    value: "../build/build/pdf.sandbox.mjs",
     kind: OptionKind.VIEWER
   };
   defaultOptions.enableFakeMLManager = {
@@ -15561,7 +15565,9 @@ const PDFViewerApplication = {
   const params = parseQueryString(queryString);
   file = params.get("file") ?? AppOptions.get("defaultUrl");
     try {
-      file = new URL(decodeURIComponent(file)).href;
+      // URLSearchParams has already decoded the query value once. Decoding it
+      // again changes signed URLs containing escaped path/query octets.
+      file = new URL(file).href;
     } catch {
       file = encodeURIComponent(file).replaceAll("%2F", "/");
     }
@@ -15625,12 +15631,12 @@ const PDFViewerApplication = {
       // originalUrl so the viewer title uses a human-friendly source URL
       // instead of a blob UUID.
       let originalUrl = params.get("source");
-      if (originalUrl) {
-        try { originalUrl = decodeURIComponent(originalUrl); } catch {}
-      }
       this.open({
         url: file,
-        ...(originalUrl ? { originalUrl } : {})
+        ...(originalUrl ? { originalUrl } : {}),
+        // Keep authenticated loading in PDF.js so its native range requests
+        // remain available for large remote files.
+        withCredentials: true
       });
     } else {
       this._hideViewBookmark();
@@ -16702,6 +16708,14 @@ initCom(PDFViewerApplication);
     const fileOrigin = URL.parse(file, window.location)?.origin;
     if (fileOrigin === viewerOrigin) {
       return;
+    }
+    // This bundled viewer is served from the extension origin and has host
+    // permissions for remote PDFs. Hosted PDF.js viewers keep the origin check.
+    if (viewerOrigin.startsWith("chrome-extension://")) {
+      const protocol = URL.parse(file, window.location)?.protocol;
+      if (["http:", "https:", "file:", "blob:"].includes(protocol)) {
+        return;
+      }
     }
     const ex = new Error("file origin does not match viewer's");
     PDFViewerApplication._documentError("pdfjs-loading-error", {

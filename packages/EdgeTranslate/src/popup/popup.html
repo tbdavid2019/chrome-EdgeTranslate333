@@ -1,80 +1,48 @@
 <!doctype html>
-<meta charset="utf-8" />
-<html>
+<html lang="en">
   <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Edge Translate</title>
     <link type="text/css" rel="stylesheet" href="./popup.css" />
   </head>
-
   <body>
-    <div class="frame">
-      <div class="row">
-        <input type="text" id="translate_input" autofocus="autofocus" />
-        <button
-          id="translateSubmit"
-          class="i18n"
-          data-i18n-name="Translate"
-        ></button>
-      </div>
-      <label
-        id="hint_message"
-        class="i18n"
-        for="translate_input"
-        data-i18n-name="InputHint"
-      ></label>
+    <main class="frame">
+      <form class="row" id="translate-form">
+        <label class="visually-hidden i18n" for="translate_input" data-i18n-name="Translate"></label>
+        <input type="text" id="translate_input" autofocus autocomplete="off" />
+        <button type="submit" id="translateSubmit" class="i18n" data-i18n-name="Translate"></button>
+      </form>
+      <div id="hint_message" class="i18n" role="status" aria-live="polite" data-i18n-name="InputHint"></div>
 
-      <div id="setting">
-        <div class="row" style="justify-content: space-between">
-          <label
-            class="switch-label i18n"
-            for="mutual-translate"
-            data-i18n-name="MutualTranslation"
-          ></label>
+      <section id="setting" aria-label="Translation settings">
+        <div class="row">
+          <label class="switch-label i18n" for="mutual-translate" data-i18n-name="MutualTranslation"></label>
           <input type="checkbox" id="mutual-translate" class="switch" />
         </div>
-        <div class="row" style="justify-content: space-between">
-          <label
-            class="switch-label i18n"
-            for="dark-mode"
-            data-i18n-name="ThemeMode"
-            >Theme</label
-          >
+        <div class="row">
+          <label class="switch-label i18n" for="dark-mode" data-i18n-name="ThemeMode"></label>
           <input type="checkbox" id="dark-mode" class="switch" />
         </div>
-        <div class="row" style="align-items: flex-end">
-          <div class="col">
-            <div class="selection">
-              <select id="sl">
-                <option
-                  class="i18n"
-                  value="auto"
-                  data-i18n-name="AutoDetect"
-                ></option>
-              </select>
-            </div>
+        <div class="row language-row">
+          <div class="col selection">
+            <label class="visually-hidden i18n" for="sl" data-i18n-name="SourceLanguage"></label>
+            <select id="sl" aria-label="Source language">
+              <option class="i18n" value="auto" data-i18n-name="AutoDetect"></option>
+            </select>
           </div>
-          <i
-            class="translate-icon translate-icon-exchange"
-            id="exchange"
-            title="交换两种语言"
-          ></i>
-          <div class="col">
-            <div class="selection">
-              <select id="tl"></select>
-            </div>
+          <button type="button" id="exchange" class="translate-icon translate-icon-exchange" aria-label="Exchange languages" title="Exchange languages"><svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg></button>
+          <div class="col selection">
+            <label class="visually-hidden i18n" for="tl" data-i18n-name="TargetLanguage"></label>
+            <select id="tl" aria-label="Target language"></select>
           </div>
         </div>
-      </div>
-      <div class="row" id="setting-switch">
-        <i class="translate-icon translate-icon-arrow-up set" id="arrow-up"></i>
-        <i
-          class="translate-icon translate-icon-arrow-down set"
-          id="arrow-down"
-        ></i>
-      </div>
-    </div>
-
-    <footer>©2018-2025</footer>
+      </section>
+      <button type="button" class="row" id="setting-switch" aria-controls="setting" aria-expanded="false" aria-label="Translation settings">
+        <svg class="popup-chevron" id="settings-chevron" aria-hidden="true" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+    </main>
+    <footer>©2018–2025</footer>
+    <script src="./popup.js"></script>
   </body>
-
-  <script src="./popup.js"></script>
 </html>

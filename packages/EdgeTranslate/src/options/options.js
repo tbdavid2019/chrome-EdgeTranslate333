@@ -20,6 +20,7 @@ const channel = new Channel();
  */
 window.onload = () => {
   i18nHTML();
+  document.documentElement.lang = chrome.i18n.getUILanguage();
   const matchMediaFn =
     typeof window !== "undefined" && typeof window.matchMedia === "function"
       ? window.matchMedia.bind(window)

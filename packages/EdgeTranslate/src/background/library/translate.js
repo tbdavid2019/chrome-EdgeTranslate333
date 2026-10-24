@@ -215,9 +215,10 @@ class TranslatorManager {
         });
 
         // Get available translators service.
-        this.channel.provide("get_available_translators", (params) =>
-            Promise.resolve(this.getAvailableTranslators(params))
-        );
+        this.channel.provide("get_available_translators", async (params) => {
+            await this.config_loader;
+            return this.getAvailableTranslators(params);
+        });
 
         // Update default translator service.
         this.channel.provide("update_default_translator", (detail) =>

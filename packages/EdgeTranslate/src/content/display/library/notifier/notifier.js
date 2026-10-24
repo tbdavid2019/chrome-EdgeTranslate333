@@ -22,6 +22,8 @@ export default class Notifier {
     constructor(position = "center") {
         this.position = position;
         this.notificationCount = 0;
+        this.destroyingNotifications = new WeakSet();
+        this.notificationTimeouts = new WeakMap();
     }
 
     createContainer() {
@@ -45,18 +47,34 @@ export default class Notifier {
 
         // listen to click event for closeIcon
         this.shadowDom.addEventListener("click", (event) => {
-            const path = event.path;
-            let closeIconClicked = false;
-            for (let i = 0; i < path.length; i++) {
-                if (path[i] === this.shadowDom) {
-                    if (closeIconClicked && i - 1 >= 0) this.destroyNotification(path[i - 1]);
+            const path = typeof event.composedPath === "function"
+                ? event.composedPath()
+                : event.path || this.getEventPath(event.target);
+            let closeButton = false;
+            for (const target of path) {
+                if (target === this.shadowDom) return;
+                if (!target || !target.classList) continue;
+                if (target.classList.contains(`${SELECTOR_PREFIX}close`)) {
+                    closeButton = true;
+                } else if (
+                    closeButton &&
+                    target.classList.contains(`${SELECTOR_PREFIX}item`)
+                ) {
+                    this.destroyNotification(target);
                     return;
                 }
-                // the close icon is clicked
-                else if (path[i].classList.contains(`${SELECTOR_PREFIX}close`))
-                    closeIconClicked = true;
             }
         });
+    }
+
+    getEventPath(target) {
+        const path = [];
+        while (target) {
+            path.push(target);
+            if (target === this.shadowDom) break;
+            target = target.parentNode;
+        }
+        return path;
     }
 
     destroyContainer() {
@@ -103,17 +121,23 @@ export default class Notifier {
         this.shadowDom.insertBefore(notificationElement, this.shadowDom.firstChild);
 
         const setDestroyTimeout = () => {
-            if (option.duration)
+            if (option.duration) {
+                clearTimeout(option.timeoutId);
                 option.timeoutId = setTimeout(() => {
                     this.destroyNotification(option.element);
                 }, option.duration);
+                this.notificationTimeouts.set(option.element, option.timeoutId);
+            }
         };
         setDestroyTimeout();
 
         // if the mouse move into the notification element, the notification won't disappear.
         // to make sure the user has enough time to read the notification
         notificationElement.addEventListener("mouseenter", () => {
-            if (option.timeoutId !== -1) clearTimeout(option.timeoutId);
+            if (option.timeoutId !== -1) {
+                clearTimeout(option.timeoutId);
+                option.timeoutId = -1;
+            }
         });
         // resume timeout after user's mouse leave the notification element
         notificationElement.addEventListener("mouseleave", () => setDestroyTimeout());
@@ -126,13 +150,21 @@ export default class Notifier {
      * @param {Element} notificationElement the notification element to be removed
      */
     async destroyNotification(notificationElement) {
-        if (notificationElement instanceof Element) {
-            notificationElement.classList.add(`${SELECTOR_PREFIX}disappear-animation`);
-            await delayPromise(ANIMATION_DURATION);
-            if (this.shadowDom.contains(notificationElement))
-                this.shadowDom.removeChild(notificationElement);
-            this.notificationCount--;
-            if (this.notificationCount === 0) this.destroyContainer();
-        }
+        const shadowDom = this.shadowDom;
+        if (
+            !(notificationElement instanceof Element) ||
+            !shadowDom ||
+            !shadowDom.contains(notificationElement) ||
+            this.destroyingNotifications.has(notificationElement)
+        ) return;
+
+        this.destroyingNotifications.add(notificationElement);
+        clearTimeout(this.notificationTimeouts.get(notificationElement));
+        notificationElement.classList.add(`${SELECTOR_PREFIX}disappear-animation`);
+        await delayPromise(ANIMATION_DURATION);
+        if (!shadowDom.contains(notificationElement)) return;
+        shadowDom.removeChild(notificationElement);
+        this.notificationCount = Math.max(0, this.notificationCount - 1);
+        if (this.notificationCount === 0 && shadowDom === this.shadowDom) this.destroyContainer();
     }
 }

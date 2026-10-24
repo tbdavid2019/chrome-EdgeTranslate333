@@ -9,39 +9,44 @@ animation-duration = 400ms;
 	flex-direction: row;
 	justify-content: center;
 	align-items: flex-start;
-	max-width: 25vw;
-	padding: 1.5vh 1vw 1.5vh 1vw;
+	box-sizing: border-box;
+	width: 440px;
+	max-width: calc(100vw - 32px);
+	padding: 14px 16px;
 	margin: 1.5vh 0;
 	pointer-events: all;
-	border-radius: 4px;
-	background-color: white;
-	box-shadow: 0 6px 16px 0 rgba(0, 0, 0, 0.08);
+	border-radius: 12px;
+	background-color: #fff9e8;
+	color: #2b251a;
+	border: 1px solid #6b5b38;
+	box-shadow: 0 6px 18px 0 rgba(11, 26, 41, 0.2);
 	opacity: final-opacity;
 }
 
 .edge-translate-notifier-success {
-	background-color: #f6ffed;
-	border: 1px solid #b7eb8f;
+	background-color: #fff9e8;
+	border-left: 5px solid #24613a;
 }
 
 .edge-translate-notifier-info {
-	background-color: #e6f7ff;
-	border: 1px solid #91d5ff;
+	background-color: #fff9e8;
+	border-left: 5px solid #17324d;
 }
 
 .edge-translate-notifier-warning {
-	background-color: #fffbe6;
-	border: 1px solid #ffe58f;
+	background-color: #fff9e8;
+	border-left: 5px solid #8a5b00;
 }
 
 .edge-translate-notifier-error {
-	background-color: #fff2f0;
-	border: 1px solid #ffccc7;
+	background-color: #fff9e8;
+	border-left: 5px solid #a9471d;
 }
 
 .edge-translate-notifier-icon {
-	font-size: large;
-	margin-right: 15px;
+	font-size: 20px;
+	color: currentColor;
+	margin-right: 12px;
 	position: relative;
 	top: 3px;
 }
@@ -56,24 +61,37 @@ animation-duration = 400ms;
 
 .edge-translate-notifier-title {
 	font-size: 16px;
+	font-weight: 600;
 }
 
 .edge-translate-notifier-detail {
 	font-size: 14px;
-	padding-top: 10px;
+	padding-top: 6px;
 }
 
 .edge-translate-notifier-close {
 	cursor: pointer;
-	font-size: x-small;
-	margin-left: 15px;
+	border: 0;
+	padding: 4px;
+	background: transparent;
+	color: inherit;
+	font-size: 16px;
+	margin-left: 12px;
 	position: relative;
 	top: 6px;
-	fill: rgba(0, 0, 0, 0.45);
+	color: #655a43;
 
 	:hover {
-		fill: rgba(0, 0, 0, 0.9);
+		color: #2b251a;
 	}
+
+	svg { width: 20px; height: 20px; stroke-width: 2; }
+}
+
+.edge-translate-notifier-close:focus-visible {
+	outline: 3px solid #a9471d;
+	outline-offset: 3px;
+	border-radius: 4px;
 }
 
 .edge-translate-notifier-show-animation {
@@ -110,4 +128,8 @@ animation-duration = 400ms;
 		transform: translate(0, -30px) scale(0.75);
 		opacity: 0;
 	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.edge-translate-notifier-show-animation, .edge-translate-notifier-disappear-animation { animation: none !important; }
 }

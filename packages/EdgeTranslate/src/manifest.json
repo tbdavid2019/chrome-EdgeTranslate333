@@ -1,7 +1,7 @@
 {
   "name": "__MSG_AppName__",
   "description": "__MSG_Description__",
-  "version": "3.4.3",
+  "version": "3.4.6",
   "homepage_url": "https://github.com/tbdavid2019/chrome-EdgeTranslate333",
   "default_locale": "zh_TW",
   "background": {
@@ -88,7 +88,9 @@
         "**/*.json",
         "google/*"
       ],
-      "matches": ["<all_urls>"]
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ],
   "icons": {
@@ -110,9 +112,11 @@
     "webRequest",
     "declarativeNetRequest"
   ],
-  "host_permissions": ["*://*/*"],
+  "host_permissions": [
+    "*://*/*"
+  ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; worker-src 'self'"
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; worker-src 'self'"
   },
   "declarative_net_request": {
     "rule_resources": [

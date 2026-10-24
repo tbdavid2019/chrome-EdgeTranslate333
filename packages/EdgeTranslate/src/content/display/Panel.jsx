@@ -1,6 +1,6 @@
 /** @jsx h */
 import { h, Fragment } from "preact";
-import { useEffect, useState, useRef, useCallback } from "preact/hooks";
+import { useEffect, useState, useRef, useCallback, useMemo } from "preact/hooks";
 import { useLatest, useEvent, useClickAway } from "react-use";
 import styled, { createGlobalStyle, ThemeProvider } from "styled-components";
 import root from "react-shadow/styled-components";
@@ -22,9 +22,8 @@ import Result from "./Result.jsx"; // display translate result
 import Loading from "./Loading.jsx"; // display loading animation
 import Error from "./Error.jsx"; // display error messages
 import Dropdown from "./Dropdown.jsx";
-import SettingIcon from "./icons/setting.svg";
-import PinIcon from "./icons/pin.svg";
-import CloseIcon from "./icons/close.svg";
+import { Settings as SettingIcon, Pin as PinIcon, PinOff, X as CloseIcon } from "lucide-preact";
+import { translationColors as colors } from "common/scripts/uiTheme.js";
 
 // Communication channel.
 const channel = new Channel();
@@ -226,10 +225,14 @@ export default function ResultPanel() {
   const [displayType, setDisplayType] = useState("floating");
   const [isDark, setIsDark] = useState(false);
   const appearanceRef = useRef(DEFAULT_SETTINGS.Appearance);
-  const matchMediaFn =
+  // Keep effect dependencies stable across renders. A new bound function here
+  // restarts initialization, whose async state updates trigger another render.
+  const matchMediaFn = useMemo(() =>
     typeof window !== "undefined" && typeof window.matchMedia === "function"
       ? window.matchMedia.bind(window)
-      : undefined;
+      : undefined,
+    [],
+  );
 
   const containerElRef = useRef(), // the container of translation panel.
     panelElRef = useRef(), // panel element
@@ -460,6 +463,8 @@ export default function ResultPanel() {
 
   /* Do some initialization stuff */
   useEffect(() => {
+    const cancelers = [];
+    const listen = (event, handler) => cancelers.push(channel.on(event, handler));
     getDisplaySetting();
 
     getOrSetDefaultSettings(
@@ -505,7 +510,7 @@ export default function ResultPanel() {
     // The translator send this request to make sure current tab can display result panel.
     channel.provide("check_availability", () => Promise.resolve());
 
-    channel.on("start_translating", (detail) => {
+    listen("start_translating", (detail) => {
       if (checkTimestamp(detail.timestamp)) {
         // cache translation text.
         window.translateResult.originalText = detail.text;
@@ -518,7 +523,7 @@ export default function ResultPanel() {
       }
     });
 
-    channel.on("translating_finished", (detail) => {
+    listen("translating_finished", (detail) => {
       if (checkTimestamp(detail.timestamp)) {
         window.translateResult = detail;
         if (detail.position && Array.isArray(detail.position)) {
@@ -530,7 +535,7 @@ export default function ResultPanel() {
       }
     });
 
-    channel.on("translating_error", (detail) => {
+    listen("translating_error", (detail) => {
       if (checkTimestamp(detail.timestamp)) {
         if (detail.position && Array.isArray(detail.position)) {
           lastAnchorPosRef.current = [detail.position[0], detail.position[1]];
@@ -540,12 +545,12 @@ export default function ResultPanel() {
       }
     });
 
-    channel.on("update_translator_options", (detail) => {
+    listen("update_translator_options", (detail) => {
       setAvailableTranslators(detail.availableTranslators);
       setCurrentTranslator(detail.selectedTranslator);
     });
 
-    channel.on("command", (detail) => {
+    listen("command", (detail) => {
       switch (detail.command) {
         case "fix_result_frame":
           getOrSetDefaultSettings("fixSetting", DEFAULT_SETTINGS).then(
@@ -566,7 +571,7 @@ export default function ResultPanel() {
     });
 
     // TTS 실행 메시지 처리
-    channel.on("execute_tts", async (detail) => {
+    listen("execute_tts", async (detail) => {
       if (checkTimestamp(detail.timestamp)) {
         try {
           // Content Script에서 TTS 실행
@@ -591,11 +596,12 @@ export default function ResultPanel() {
     });
 
     // TTS 중지 메시지 처리
-    channel.on("stop_tts", () => {
+    listen("stop_tts", () => {
       stopTTS();
     });
 
     return () => {
+      cancelers.forEach((cancel) => cancel());
       chrome.storage.onChanged.removeListener(onStorageChange);
       stopWatchingTheme();
     };
@@ -1142,10 +1148,13 @@ export default function ResultPanel() {
                   <Fragment>
                     <Head ref={headElRef} data-testid="Head">
                       <SourceOption
-                        role="button"
                         title={chrome.i18n.getMessage(
                           `${currentTranslator}Short`,
                         )}
+                        aria-label={
+                          chrome.i18n.getMessage(`${currentTranslator}Short`) ||
+                          chrome.i18n.getMessage("DefaultPageTranslator")
+                        }
                         activeKey={currentTranslator}
                         onSelect={(eventKey) => {
                           setCurrentTranslator(eventKey);
@@ -1174,14 +1183,20 @@ export default function ResultPanel() {
                       </SourceOption>
                       <HeadIcons>
                         <HeadIcon
+                          type="button"
+                          aria-label={chrome.i18n.getMessage("Settings")}
                           role="button"
                           title={chrome.i18n.getMessage("Settings")}
                           onClick={() => channel.emit("open_options_page")}
                           data-testid="SettingIcon"
                         >
-                          <SettingIcon />
+                          <SettingIcon aria-hidden="true" />
                         </HeadIcon>
                         <HeadIcon
+                          type="button"
+                          aria-label={chrome.i18n.getMessage(
+                            panelFix ? "UnfixResultFrame" : "FixResultFrame",
+                          )}
                           role="button"
                           title={chrome.i18n.getMessage(
                             panelFix ? "UnfixResultFrame" : "FixResultFrame",
@@ -1194,15 +1209,17 @@ export default function ResultPanel() {
                           }}
                           data-testid="PinIcon"
                         >
-                          <StyledPinIcon fix={panelFix} />
+                          {panelFix ? <PinIcon aria-hidden="true" /> : <PinOff aria-hidden="true" />}
                         </HeadIcon>
                         <HeadIcon
+                          type="button"
+                          aria-label={chrome.i18n.getMessage("CloseResultFrame")}
                           role="button"
                           title={chrome.i18n.getMessage("CloseResultFrame")}
                           onClick={() => setOpen(false)}
                           data-testid="CloseIcon"
                         >
-                          <CloseIcon />
+                          <CloseIcon aria-hidden="true" />
                         </HeadIcon>
                       </HeadIcons>
                     </Head>
@@ -1238,13 +1255,13 @@ export default function ResultPanel() {
  */
 
 export const MaxZIndex = 2147483647;
-const ColorPrimary = "#4a8cf7";
+const ColorPrimary = colors.saffron;
 const PanelBorderRadius = "8px";
 export const ContentWrapperCenterClassName = "simplebar-content-wrapper-center";
 
-const PanelBgDark = "#202124";
-const HeadIconBgDark = "#292a2d";
-const HeadIconFillDark = "#9aa0a6";
+const PanelBgDark = colors.darkNavy;
+const HeadIconBgDark = colors.darkSurface;
+const HeadIconFillDark = colors.darkMuted;
 
 const GlobalStyle = createGlobalStyle`
     ${SimpleBarStyle}
@@ -1320,8 +1337,8 @@ const Panel = styled.div`
     props.displayType === "floating" ? PanelBorderRadius : 0};
   overflow: visible;
   box-shadow: 0px 8px 12px 5px rgba(0, 0, 0, 0.25);
-  background: ${(props) =>
-    props.theme?.isDark ? PanelBgDark : "rgba(235, 235, 235, 1)"};
+    background: ${(props) =>
+    props.theme?.isDark ? PanelBgDark : colors.canvas};
 
   /* Normalize the style of panel */
   padding: 0;
@@ -1329,13 +1346,16 @@ const Panel = styled.div`
   border: none;
   font-size: 16px;
   font-weight: normal;
-  color: ${(props) => (props.theme?.isDark ? "#e8eaed" : "black")};
-  line-height: 1;
+  color: ${(props) => (props.theme?.isDark ? colors.darkText : colors.ink)};
+  line-height: 1.6;
   -webkit-text-size-adjust: 100%;
   box-sizing: border-box;
   -moz-tab-size: 4;
   tab-size: 4;
   font-family:
+    "PingFang TC",
+    "Microsoft JhengHei",
+    "Noto Sans TC",
     system-ui,
     -apple-system,
     /* Firefox supports this but not yet 'system-ui' */ "Segoe UI",
@@ -1377,7 +1397,7 @@ const HeadIcons = styled.div`
   align-items: center;
 `;
 
-const HeadIcon = styled.div`
+const HeadIcon = styled.button`
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1385,39 +1405,34 @@ const HeadIcon = styled.div`
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   cursor: pointer;
-  font-size: 18px;
-  width: 24px;
-  height: 24px;
+  font-size: 16px;
+  width: 32px;
+  height: 32px;
   margin: 2px;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
   background-color: ${(props) =>
-    props.theme?.isDark ? HeadIconBgDark : "rgba(255, 255, 255, 0.8)"};
+    props.theme?.isDark ? HeadIconBgDark : colors.cream};
   border-radius: 15px;
+  &:focus-visible { outline: 2px solid ${(props) => props.theme?.isDark ? colors.saffron : colors.deepBlue}; outline-offset: 2px; }
 
   svg {
-    fill: ${(props) => (props.theme?.isDark ? HeadIconFillDark : "#8e8e93")};
+    color: ${(props) => (props.theme?.isDark ? HeadIconFillDark : colors.muted)};
     width: 16px;
     height: 16px;
     display: block;
-    transition: fill 0.2s linear;
+    transition: color 0.2s linear;
   }
 
-  &:hover svg {
-    fill: dimgray;
-  }
-`;
-
-const StyledPinIcon = styled(PinIcon)`
-  transition:
-    transform 0.4s,
-    fill 0.2s linear !important;
-  ${(props) => (props.fix ? "" : "transform: rotate(45deg)")}
+  &:hover svg { color: ${colors.clay}; }
 `;
 
 const Body = styled.div`
   width: 100%;
   box-sizing: border-box;
   font-weight: normal;
-  font-size: medium;
+  font-size: 16px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -1434,7 +1449,8 @@ const Body = styled.div`
 const SourceOption = styled(Dropdown)`
   max-width: 45%;
   font-weight: normal;
-  font-size: small;
+  font-size: 14px;
+  & > button { font-size: 14px; }
   cursor: pointer;
   // To center the text in select box
   text-align-last: center;
